@@ -49,9 +49,3 @@ E-Mails sollen später erst nach manueller Freigabe versendet werden.
 Arbeitsweise
 
 Das Projekt wird iterativ entwickelt. Folge den jeweiligen Anweisungen Schritt für Schritt und halte Änderungen möglichst klein und nachvollziehbar.
-:::
-
-Das wäre die Version, die ich tatsächlich als ersten AGENTS.md-Kontext verwenden würde. Alles Weitere kannst du OpenCode dann einzeln als nächste Aufgabe geben.
-
-
-ich möchte dieses Projekt starten. Dafür nutze ich Opencode. Und dann wahrscheinlich visual studio code oder? Hilf mir, das setup zu machen. anschließend möchte ich wirklich schritt für schirtt mit open code + vll einer KI API dieses Projekt aufbauen, ggf. sogar so, dass ich die Codezeilene selbst cshriebe ( copilot hilft). Ihc mlchte das halt lernen und auch verstehen.
