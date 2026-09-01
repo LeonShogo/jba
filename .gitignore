@@ -34,3 +34,4 @@ frontend/.env.local
 ### Backend
 backend/.venv/
 backend/__pycache__/
+backend/.postgres-data/
