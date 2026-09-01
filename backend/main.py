@@ -1,5 +1,11 @@
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
+from fastapi import Depends
+
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+from database import get_db
+from models import ClubModel
 
 app = FastAPI()
 
@@ -20,29 +26,25 @@ class ClubCreate(BaseModel):
     email: str | None = None
     phone: str | None = None
 
-clubs: list[Club] = [
-    Club(id=1, name="Club 1", city="Berlin"),
-    Club(id=2, name="Club 2", city="Hamburg"),
-]
-
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
 @app.get("/clubs", response_model=list[Club])
-def get_clubs() -> list[Club]:
-    return clubs
+def get_clubs(db: Session = Depends(get_db)) -> list[Club]:
+    return list(db.scalars(select(ClubModel)).all())
 
 @app.get("/clubs/{club_id}", response_model=Club)
-def get_club(club_id: int) -> Club:
-    for club in clubs:
-        if club.id == club_id:
-            return club
-    raise HTTPException(status_code=404, detail="Club not found")
-
+def get_club(club_id: int, db: Session = Depends(get_db)) -> ClubModel:
+    club = db.get(ClubModel, club_id)
+    if club is None:
+        raise HTTPException(status_code=404, detail="Club not found")
+    return club
 
 @app.post("/clubs", response_model=Club, status_code=201)
-def create_club(data: ClubCreate) -> Club:
-    club = Club(id=len(clubs) + 1, **data.model_dump())
-    clubs.append(club)
+def create_club(data: ClubCreate, db: Session = Depends(get_db)) -> ClubModel:
+    club = ClubModel(**data.model_dump())
+    db.add(club)
+    db.commit()
+    db.refresh(club)
     return club
