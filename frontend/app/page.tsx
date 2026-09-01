@@ -1,5 +1,24 @@
 
-export default function Home() {
+
+
+type Club = {
+  id: number;
+  name: string;
+  city: string;
+};
+
+export default async function Home() {
+
+    const response = await fetch(`${process.env.API_URL}/clubs`, {
+      cache: "no-store",
+    });
+
+        if (!response.ok) {
+        throw new Error("Clubs konnten nicht geladen werden.");
+      }
+
+const clubs: Club[] = await response.json();
+
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-center py-32 px-16 bg-white dark:bg-black sm:items-start">
@@ -11,11 +30,15 @@ export default function Home() {
           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
            Verwalte Jazzclubs, Kontakte und Bookinanfragen.
           </p>
-          <button className="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white">
-            Clubs anzeigen
-            </button>
+          <ul>
+            {clubs.map((club) => (
+              <li key={club.id} className="text-lg font-medium text-black dark:text-zinc-50">
+                {club.name} - {club.city}
+              </li>
+            ))}
+          </ul>
         </div>
-  
+
       </main>
     </div>
   );
