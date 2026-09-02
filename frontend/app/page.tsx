@@ -1,4 +1,4 @@
-
+import {createClub} from "./actions";
 
 
 type Club = {
@@ -37,6 +37,11 @@ const clubs: Club[] = await response.json();
               </li>
             ))}
           </ul>
+          <form action={createClub}>
+            <input type="text" name="name" placeholder="Club Name" required />
+            <input type="text" name="city" placeholder="City" required />
+            <button type="submit">Create Club</button>
+          </form>
         </div>
 
       </main>
