@@ -24,3 +24,22 @@ export async function createClub(formData: FormData) {
     revalidatePath("/");
     return response.json();
 }
+
+
+
+export async function deleteClub(formData: FormData){
+    const id = formData.get("id");
+
+    if (typeof id !== "string") {
+        throw new Error("Club-ID fehlt.");
+    }
+
+    const response = await fetch(`${process.env.API_URL}/clubs/${id}`, {
+        method: "DELETE",
+    });
+
+    if (!response.ok) {
+        throw new Error("Club konnte nicht gelöscht werden.");
+    }
+    revalidatePath("/");
+}

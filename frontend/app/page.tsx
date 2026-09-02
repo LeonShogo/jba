@@ -1,9 +1,9 @@
-import {createClub} from "./actions";
+import {createClub, deleteClub } from "./actions"
 
 
 type Club = {
   id: number;
-  name: string;
+  name: string
   city: string;
 };
 
@@ -34,6 +34,10 @@ const clubs: Club[] = await response.json();
             {clubs.map((club) => (
               <li key={club.id} className="text-lg font-medium text-black dark:text-zinc-50">
                 {club.name} - {club.city}
+                <form action={deleteClub}>
+                  <input type="hidden" name="id" value={club.id} />
+                  <button type="submit">Löschen</button>
+                </form>
               </li>
             ))}
           </ul>
