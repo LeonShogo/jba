@@ -43,3 +43,27 @@ export async function deleteClub(formData: FormData){
     }
     revalidatePath("/");
 }
+
+export async function updateClub(formData: FormData){
+
+    const id = formData.get("id");
+    const name = formData.get("name");
+    const city = formData.get("city");
+
+    if (typeof id !== "string" || typeof name !== "string" || typeof city !== "string") {
+        throw new Error("Ungültige Eingabedaten.");
+    }
+
+    const response = await fetch(`${process.env.API_URL}/clubs/${id}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, city }),
+    });
+
+    if (!response.ok) {
+        throw new Error("Club konnte nicht aktualisiert werden.");
+    }
+    revalidatePath("/");
+}
