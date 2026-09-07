@@ -5,11 +5,14 @@ from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from database import get_db
-from models import ClubModel
+from models import BandModel, ClubModel
+from schemas import Band, BandCreate
+from enums import VenueType
 
 app = FastAPI()
 
 class Club(BaseModel):
+    venue_type: VenueType = VenueType.CLUB
     id: int
     name: str
     city: str
@@ -19,6 +22,7 @@ class Club(BaseModel):
     phone: str | None = None
 
 class ClubCreate(BaseModel):
+    venue_type: VenueType = VenueType.CLUB
     name: str
     city: str
     website: str | None = None
@@ -28,6 +32,7 @@ class ClubCreate(BaseModel):
 
 
 class ClubUpdate(BaseModel):
+    venue_type: VenueType = VenueType.CLUB
     name: str | None = None
     city: str | None = None
     website: str | None = None
@@ -39,9 +44,22 @@ class ClubUpdate(BaseModel):
 def health():
     return {"status": "ok"}
 
+
 @app.get("/clubs", response_model=list[Club])
 def get_clubs(db: Session = Depends(get_db)) -> list[Club]:
     return list(db.scalars(select(ClubModel)).all())
+
+@app.get("/bands", response_model=list[Band])
+def get_bands(db: Session = Depends(get_db)) -> list[Band]:
+    return list(db.scalars(select(BandModel)).all())
+
+@app.post("/bands", response_model=Band, status_code=201)
+def create_band(data: BandCreate, db: Session = Depends(get_db)) -> BandModel:
+    band = BandModel(**data.model_dump())
+    db.add(band)
+    db.commit()
+    db.refresh(band)
+    return band
 
 @app.get("/clubs/{club_id}", response_model=Club)
 def get_club(club_id: int, db: Session = Depends(get_db)) -> ClubModel:
