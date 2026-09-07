@@ -1,64 +1,54 @@
-# Jazz Booking App (JBA)
+# Jazz Booking App
 
-Kurze Übersicht
-- Private Webanwendung zur Unterstützung beim Booking von Jazzbands.
-- Tech Stack: Next.js (TypeScript) im `frontend/`, FastAPI (Python) im `backend/`, PostgreSQL als DB.
+Eine Webanwendung zur Verwaltung von Jazzbands, Clubs und Kontakten im Booking-Prozess.
 
-Quickstart (Linux)
+Das Projekt befindet sich in aktiver Entwicklung. Der aktuelle Schwerpunkt liegt auf einer lokalen Club-Datenbank als Grundlage fuer spaetere Booking-Anfragen und personalisierte E-Mails.
 
-1) Paketmanager (empfohlen): Corepack + `pnpm`
+## Aktueller Funktionsumfang
 
-```bash
-corepack enable
-corepack prepare pnpm@latest --activate
-pnpm -v
-```
+- Clubs anlegen, bearbeiten, anzeigen und loeschen
+- Clubdaten mit Name, Stadt und optionalen Kontaktinformationen speichern
+- Bands ueber eine REST-API verwalten
+- Health-Check fuer das Backend unter `GET /health`
 
-Falls du `pnpm` nicht nutzen willst, funktioniert `npm` ebenfalls:
+## Tech-Stack
 
-```bash
-npm install
-npm run dev
-```
+- Frontend: Next.js, React und TypeScript
+- Backend: FastAPI und SQLAlchemy
+- Datenbank: PostgreSQL
 
-2) Frontend starten
+## Lokale Entwicklung
 
-```bash
-cd frontend
-pnpm install   # oder npm install
-pnpm dev       # oder npm run dev
-```
+Voraussetzungen: Node.js mit Corepack, Python 3 und eine laufende PostgreSQL-Datenbank.
 
-3) Backend starten
+### Backend
 
 ```bash
 cd backend
-# falls noch nicht aktiviert: python3 -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
-pip install --upgrade pip
 pip install -r requirements.txt
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
+cp .env.example .env
+uvicorn main:app --reload --host 127.0.0.1 --port 8001
 ```
 
-4) Nächste Schritte
-- `.env.example` im `backend/` anlegen (DB-URL, Secrets)
-- Weitere Dokumentation in diesem `README.md` ergänzen
+Passe anschliessend `DATABASE_URL` in `backend/.env` an deine lokale PostgreSQL-Datenbank an. Die Datenbanktabellen muessen derzeit noch passend zu den Modellen angelegt werden.
 
-Mehr: Lies bitte die Entwicklerregeln in `AGENTS.md`.
-
-**Contributing**
-
-- Fork / clone this repository and create a feature branch for your work.
-- Before running the backend, copy `backend/.env.example` to `backend/.env` and fill in secret values.
-- Start frontend and backend locally (see Quickstart above) and ensure endpoints respond.
-- Run linters and tests (add lint/test commands as they are added).
-- Commit logically grouped changes with clear messages.
-- Open a pull request describing the change and any manual test steps.
-
-When you're ready to create the initial commit of these files locally, run:
+### Frontend
 
 ```bash
-git add .
-git commit -m "chore: initial scaffold and docs"
-git push -u origin YOUR_BRANCH
+cd frontend
+corepack enable
+pnpm install
+pnpm dev
 ```
+
+Das Frontend ist anschliessend unter [http://localhost:3000](http://localhost:3000) erreichbar und erwartet das Backend unter `http://localhost:8001`.
+
+## Konfiguration
+
+Beispielwerte liegen in `backend/.env.example` und `frontend/.env.example`. Lokale `.env`-Dateien enthalten potenziell sensible Daten und werden nicht versioniert.
+
+## Lizenz
+
+Derzeit ist keine Lizenz vergeben.
