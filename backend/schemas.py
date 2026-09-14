@@ -1,10 +1,23 @@
 from pydantic import BaseModel
-from enums import VenueType
-
+from enums import VenueType, BookingStatus
 
 class Band(BaseModel):
     id: int
     name: str
+    email: str | None = None
+    website: str | None = None
+    contact_person: str | None = None
+    phone: str | None = None
+
+class BandCreate(BaseModel):
+    name: str
+    email: str | None = None
+    website: str | None = None
+    contact_person: str | None = None
+    phone: str | None = None
+
+class BandUpdate(BaseModel):
+    name: str | None = None
     email: str | None = None
     website: str | None = None
     contact_person: str | None = None
@@ -38,11 +51,20 @@ class VenueUpdate(BaseModel):
     email: str | None = None
     phone: str | None = None
 
-class BandCreate(BaseModel):
-    name: str
-    email: str | None = None
-    website: str | None = None
-    contact_person: str | None = None
-    phone: str | None = None
+class Booking(BaseModel):
+    id: int
+    band_id: int
+    venue_id: int
+    status: BookingStatus
+    notes: str | None = None
 
-    
+class BookingCreate(BaseModel):
+    band_id: int
+    venue_id: int
+    notes: str | None = None
+
+class BookingUpdate(BaseModel):
+    status: BookingStatus | None = None
+    notes: str | None = None
+
+

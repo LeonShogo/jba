@@ -1,8 +1,10 @@
 
-from sqlalchemy import String
+
+from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Base
-from enums import VenueType
+from enums import VenueType, BookingStatus
+from sqlalchemy import String, ForeignKey
 
 class VenueModel(Base):
     __tablename__ = "venues"
@@ -26,3 +28,12 @@ class BandModel(Base):
     website: Mapped[str | None] = mapped_column(String(500), nullable=True)
     contact_person: Mapped[str | None] = mapped_column(String(200), nullable=True)
     phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
+
+class BookingModel(Base):
+    __tablename__ = "bookings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    band_id: Mapped[int] = mapped_column(ForeignKey("bands.id"))
+    venue_id: Mapped[int] = mapped_column(ForeignKey("venues.id"))
+    status: Mapped[str] = mapped_column(String(50), default=BookingStatus.DRAFT.value)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
