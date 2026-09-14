@@ -1,7 +1,7 @@
-import {createClub, deleteClub, updateClub } from "./actions"
+import {createVenue, deleteVenue, updateVenue } from "./actions"
 
 
-type Club = {
+type Venue = {
   id: number;
   name: string
   city: string;
@@ -9,15 +9,15 @@ type Club = {
 
 export default async function Home() {
 
-    const response = await fetch(`${process.env.API_URL}/clubs`, {
+    const response = await fetch(`${process.env.API_URL}/venues`, {
       cache: "no-store",
     });
 
         if (!response.ok) {
-        throw new Error("Clubs konnten nicht geladen werden.");
+        throw new Error("Venues konnten nicht geladen werden.");
       }
 
-const clubs: Club[] = await response.json();
+const venues: Venue[] = await response.json();
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -31,26 +31,26 @@ const clubs: Club[] = await response.json();
            Verwalte Jazzclubs, Kontakte und Bookinanfragen.
           </p>
           <ul>
-            {clubs.map((club) => (
-              <li key={club.id} className="text-lg font-medium text-black dark:text-zinc-50">
-                {club.name} - {club.city}
-                <form action={updateClub}>
-                  <input type="hidden" name="id" value={club.id} />
-                  <input type="text" name="name" defaultValue={club.name} required />
-                  <input type="text" name="city" defaultValue={club.city} required />
+            {venues.map((venue) => (
+              <li key={venue.id} className="text-lg font-medium text-black dark:text-zinc-50">
+                {venue.name} - {venue.city}
+                <form action={updateVenue}>
+                  <input type="hidden" name="id" value={venue.id} />
+                  <input type="text" name="name" defaultValue={venue.name} required />
+                  <input type="text" name="city" defaultValue={venue.city} required />
                   <button type="submit">Aktualisieren</button>
                 </form>
-                <form action={deleteClub}>
-                  <input type="hidden" name="id" value={club.id} />
+                <form action={deleteVenue}>
+                  <input type="hidden" name="id" value={venue.id} />
                   <button type="submit">Löschen</button>
                 </form>
               </li>
             ))}
           </ul>
-          <form action={createClub}>
-            <input type="text" name="name" placeholder="Club Name" required />
+          <form action={createVenue}>
+            <input type="text" name="name" placeholder="Venue Name" required />
             <input type="text" name="city" placeholder="City" required />
-            <button type="submit">Create Club</button>
+            <button type="submit">Create Venue</button>
           </form>
         </div>
 
