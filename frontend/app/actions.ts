@@ -165,11 +165,27 @@ export async function updateBooking(formData: FormData) {
   const response = await fetch(`${process.env.API_URL}/bookings/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status, notes: notes || null, }),
+    body: JSON.stringify({ status, notes: notes || null }),
   });
 
   if (!response.ok) {
     throw new Error("Booking-Status konnte nicht geändert werden.");
+  }
+
+  revalidatePath("/bookings");
+}
+
+export async function deleteBooking(formData: FormData) {
+  const id = Number(formData.get("id"));
+  if (id <= 0) {
+    throw new Error("Ungültige Booking-ID.");
+  }
+
+  const response = await fetch(`${process.env.API_URL}/bookings/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new Error("Booking konnte nicht gelöscht werden.");
   }
 
   revalidatePath("/bookings");

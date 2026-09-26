@@ -1,4 +1,4 @@
-import { createBooking, updateBooking } from "../actions";
+import { createBooking, deleteBooking, updateBooking } from "../actions";
 
 type Booking = {
   id: number;
@@ -90,6 +90,10 @@ export default async function BookingPage() {
               <p>{booking.notes ?? "Keine Notiz"}</p>
               <textarea name="notes" defaultValue={booking.notes ?? ""} />
               <button type="submit">Änderungen speichern</button>
+            </form>
+            <form action={deleteBooking}>
+              <input type="hidden" name="id" value={booking.id} />
+              <button type="submit">Booking löschen</button>
             </form>
           </li>
         ))}
