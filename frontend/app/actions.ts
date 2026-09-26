@@ -130,15 +130,20 @@ export async function createBand(formData: FormData) {
 export async function createBooking(formData: FormData) {
   const bandId = Number(formData.get("band_id"));
   const venueId = Number(formData.get("venue_id"));
+  const notes = formData.get("notes");
 
-  if (bandId <= 0 || venueId <= 0) {
+  if (bandId <= 0 || venueId <= 0 || typeof notes !== "string") {
     throw new Error("Band und Venue müssen ausgewählt werden.");
   }
 
   const response = await fetch(`${process.env.API_URL}/bookings`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ band_id: bandId, venue_id: venueId }),
+    body: JSON.stringify({
+      band_id: bandId,
+      venue_id: venueId,
+      notes: notes || null,
+    }),
   });
 
   if (!response.ok) {
@@ -148,18 +153,19 @@ export async function createBooking(formData: FormData) {
   revalidatePath("/bookings");
 }
 
-export async function updateBookingStatus(formData: FormData) {
+export async function updateBooking(formData: FormData) {
   const id = Number(formData.get("id"));
   const status = formData.get("status");
+  const notes = formData.get("notes");
 
-  if (id <= 0 || typeof status !== "string") {
+  if (id <= 0 || typeof status !== "string" || typeof notes !== "string") {
     throw new Error("Ungültiger Booking-Status.");
   }
 
   const response = await fetch(`${process.env.API_URL}/bookings/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({ status, notes: notes || null, }),
   });
 
   if (!response.ok) {

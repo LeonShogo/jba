@@ -1,10 +1,11 @@
-import { createBooking, updateBookingStatus } from "../actions";
+import { createBooking, updateBooking } from "../actions";
 
 type Booking = {
   id: number;
   band_id: number;
   venue_id: number;
   status: string;
+  notes: string | null;
 };
 
 type Band = {
@@ -66,6 +67,7 @@ export default async function BookingPage() {
             </option>
           ))}
         </select>
+        <textarea name="notes" placeholder="Notizen zum Booking" />
         <button type="submit">Booking erstellen</button>
       </form>
       <ul>
@@ -75,7 +77,7 @@ export default async function BookingPage() {
             {venueNames.get(booking.venue_id)}
             {" — "}
             {booking.status}
-            <form action={updateBookingStatus}>
+            <form action={updateBooking}>
               <input type="hidden" name="id" value={booking.id} />
               <select name="status" defaultValue={booking.status}>
                 <option value="draft">Entwurf</option>
@@ -85,7 +87,9 @@ export default async function BookingPage() {
                 <option value="accepted">Zugesagt</option>
                 <option value="rejected">Abgelehnt</option>
               </select>
-              <button type="submit">Status speichern</button>
+              <p>{booking.notes ?? "Keine Notiz"}</p>
+              <textarea name="notes" defaultValue={booking.notes ?? ""} />
+              <button type="submit">Änderungen speichern</button>
             </form>
           </li>
         ))}
