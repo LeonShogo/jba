@@ -1,4 +1,4 @@
-import { createBooking } from "../actions";
+import { createBooking, updateBookingStatus } from "../actions";
 
 type Booking = {
   id: number;
@@ -75,6 +75,18 @@ export default async function BookingPage() {
             {venueNames.get(booking.venue_id)}
             {" — "}
             {booking.status}
+            <form action={updateBookingStatus}>
+              <input type="hidden" name="id" value={booking.id} />
+              <select name="status" defaultValue={booking.status}>
+                <option value="draft">Entwurf</option>
+                <option value="sent">Gesendet</option>
+                <option value="replied">Antwort erhalten</option>
+                <option value="follow_up">Nachfassen</option>
+                <option value="accepted">Zugesagt</option>
+                <option value="rejected">Abgelehnt</option>
+              </select>
+              <button type="submit">Status speichern</button>
+            </form>
           </li>
         ))}
       </ul>

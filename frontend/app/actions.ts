@@ -115,3 +115,24 @@ export async function createBooking(formData: FormData) {
 
   revalidatePath("/bookings");
 }
+
+export async function updateBookingStatus(formData: FormData) {
+  const id = Number(formData.get("id"));
+  const status = formData.get("status");
+
+  if (id <= 0 || typeof status !== "string") {
+    throw new Error("Ungültiger Booking-Status.");
+  }
+
+  const response = await fetch(`${process.env.API_URL}/bookings/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Booking-Status konnte nicht geändert werden.");
+  }
+
+  revalidatePath("/bookings");
+}
