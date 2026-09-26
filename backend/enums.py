@@ -12,3 +12,8 @@ class BookingStatus(str, Enum):
     ACCEPTED = "accepted"
     REJECTED = "rejected"
 
+class EmailDraftStatus(str, Enum):
+    DRAFT = "draft"
+    APPROVED = "approved"
+    SENT = "sent"
+

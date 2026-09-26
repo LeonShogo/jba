@@ -5,8 +5,8 @@ from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from database import get_db
-from models import BandModel, VenueModel, BookingModel
-from schemas import Band, BandCreate, BandUpdate, Venue, VenueCreate, VenueUpdate, Booking, BookingCreate, BookingUpdate
+from models import BandModel, VenueModel, BookingModel, EmailDraftModel
+from schemas import Band, BandCreate, BandUpdate, Venue, VenueCreate, VenueUpdate, Booking, BookingCreate, BookingUpdate, EmailDraft,EmailDraftCreate, EmailDraftUpdate
 
 app = FastAPI()
 
@@ -131,4 +131,68 @@ def delete_band(band_id: int, db: Session = Depends(get_db)) -> None:
     if band is None:
         raise HTTPException(status_code=404, detail="Band not found")
     db.delete(band)
+    db.commit()
+
+@app.get("/email-drafts", response_model=list[EmailDraft])
+def get_email_drafts(db: Session = Depends(get_db)) -> list[EmailDraft]:
+    return list(db.scalars(select(EmailDraftModel)).all())
+
+
+@app.get("/email-drafts/{draft_id}", response_model=EmailDraft)
+def get_email_draft(
+    draft_id: int,
+    db: Session = Depends(get_db),) -> EmailDraftModel:
+    draft = db.get(EmailDraftModel, draft_id)
+
+    if draft is None:
+        raise HTTPException(status_code=404, detail="Email draft not found")
+
+    return draft
+
+
+@app.post("/email-drafts", response_model=EmailDraft, status_code=201)
+def create_email_draft(
+    data: EmailDraftCreate,
+    db: Session = Depends(get_db),
+) -> EmailDraftModel:
+    if db.get(BookingModel, data.booking_id) is None:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    draft = EmailDraftModel(**data.model_dump())
+    db.add(draft)
+    db.commit()
+    db.refresh(draft)
+    return draft
+
+
+@app.patch("/email-drafts/{draft_id}", response_model=EmailDraft)
+def update_email_draft(
+    draft_id: int,
+    data: EmailDraftUpdate,
+    db: Session = Depends(get_db),
+) -> EmailDraftModel:
+    draft = db.get(EmailDraftModel, draft_id)
+
+    if draft is None:
+        raise HTTPException(status_code=404, detail="Email draft not found")
+
+    for key, value in data.model_dump(exclude_unset=True).items():
+        setattr(draft, key, value)
+
+    db.commit()
+    db.refresh(draft)
+    return draft
+
+
+@app.delete("/email-drafts/{draft_id}", status_code=204)
+def delete_email_draft(
+    draft_id: int,
+    db: Session = Depends(get_db),
+) -> None:
+    draft = db.get(EmailDraftModel, draft_id)
+
+    if draft is None:
+        raise HTTPException(status_code=404, detail="Email draft not found")
+
+    db.delete(draft)
     db.commit()

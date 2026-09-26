@@ -3,7 +3,7 @@
 from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Base
-from enums import VenueType, BookingStatus
+from enums import VenueType, BookingStatus, EmailDraftStatus
 from sqlalchemy import String, ForeignKey
 
 class VenueModel(Base):
@@ -37,3 +37,15 @@ class BookingModel(Base):
     venue_id: Mapped[int] = mapped_column(ForeignKey("venues.id"))
     status: Mapped[str] = mapped_column(String(50), default=BookingStatus.DRAFT.value)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+class EmailDraftModel(Base):
+    __tablename__ = "email_drafts"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    booking_id: Mapped[int] = mapped_column(ForeignKey("bookings.id"))
+    recipient_email: Mapped[str] = mapped_column(String(200))
+    subject: Mapped[str] = mapped_column(String(300))
+    body: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(
+    String(50), default=EmailDraftStatus.DRAFT.value
+)

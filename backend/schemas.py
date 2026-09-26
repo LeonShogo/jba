@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from enums import VenueType, BookingStatus
+from enums import VenueType, BookingStatus, EmailDraftStatus
 
 class Band(BaseModel):
     id: int
@@ -67,4 +67,22 @@ class BookingUpdate(BaseModel):
     status: BookingStatus | None = None
     notes: str | None = None
 
+class EmailDraft(BaseModel):
+    id: int
+    booking_id: int
+    recipient_email: str
+    subject: str
+    body: str
+    status: EmailDraftStatus
 
+class EmailDraftCreate(BaseModel):
+    booking_id: int
+    recipient_email: str
+    subject: str
+    body: str
+
+class EmailDraftUpdate(BaseModel):
+    recipient_email: str | None = None
+    subject: str | None = None
+    body: str | None = None
+    status: EmailDraftStatus | None = None
