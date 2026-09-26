@@ -6,11 +6,19 @@ export async function createVenue(formData: FormData) {
   const name = formData.get("name");
   const city = formData.get("city");
   const venueType = formData.get("venue_type");
+  const email = formData.get("email");
+  const contactPerson = formData.get("contact_person");
+  const website = formData.get("website");
+  const phone = formData.get("phone");
 
   if (
     typeof name !== "string" ||
     typeof city !== "string" ||
-    typeof venueType !== "string"
+    typeof venueType !== "string" ||
+    typeof email !== "string" ||
+    typeof contactPerson !== "string" ||
+    typeof website !== "string" ||
+    typeof phone !== "string"
   ) {
     throw new Error("Name, Stadt und Typ müssen Strings sein.");
   }
@@ -20,7 +28,15 @@ export async function createVenue(formData: FormData) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ name, city, venue_type: venueType }),
+    body: JSON.stringify({
+      name,
+      city,
+      venue_type: venueType,
+      email: email || null,
+      contact_person: contactPerson || null,
+      website: website || null,
+      phone: phone || null,
+    }),
   });
 
   if (!response.ok) {
@@ -52,12 +68,20 @@ export async function updateVenue(formData: FormData) {
   const name = formData.get("name");
   const city = formData.get("city");
   const venueType = formData.get("venue_type");
+  const email = formData.get("email");
+  const contactPerson = formData.get("contact_person");
+  const website = formData.get("website");
+  const phone = formData.get("phone");
 
   if (
     typeof id !== "string" ||
     typeof name !== "string" ||
     typeof city !== "string" ||
-    typeof venueType !== "string"
+    typeof venueType !== "string" ||
+    typeof email !== "string" ||
+    typeof contactPerson !== "string" ||
+    typeof website !== "string" ||
+    typeof phone !== "string"
   ) {
     throw new Error("Ungültige Eingabedaten.");
   }
@@ -67,7 +91,15 @@ export async function updateVenue(formData: FormData) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ name, city, venue_type: venueType }),
+    body: JSON.stringify({
+      name,
+      city,
+      venue_type: venueType,
+      email: email || null,
+      contact_person: contactPerson || null,
+      website: website || null,
+      phone: phone || null,
+    }),
   });
 
   if (!response.ok) {
