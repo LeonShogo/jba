@@ -190,3 +190,42 @@ export async function deleteBooking(formData: FormData) {
 
   revalidatePath("/bookings");
 }
+
+export async function updateBand(formData: FormData) {
+  const id = Number(formData.get("id"));
+  const name = formData.get("name");
+
+  if (id <= 0 || typeof name !== "string" || name.trim() === "") {
+    throw new Error("Ungültige Banddaten.");
+  }
+
+  const response = await fetch(`${process.env.API_URL}/bands/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Band konnte nicht aktualisiert werden.");
+  }
+
+  revalidatePath("/bands");
+}
+
+export async function deleteBand(formData: FormData) {
+  const id = Number(formData.get("id"));
+
+  if (id <= 0) {
+    throw new Error("Ungültige Band-ID.");
+  }
+
+  const response = await fetch(`${process.env.API_URL}/bands/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error("Band konnte nicht gelöscht werden.");
+  }
+
+  revalidatePath("/bands");
+}
