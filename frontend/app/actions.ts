@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 export async function createVenue(formData: FormData) {
   const name = formData.get("name");
   const city = formData.get("city");
+  const state = formData.get("state");
+  const country = formData.get("country");
   const venueType = formData.get("venue_type");
   const email = formData.get("email");
   const contactPerson = formData.get("contact_person");
@@ -14,6 +16,8 @@ export async function createVenue(formData: FormData) {
   if (
     typeof name !== "string" ||
     typeof city !== "string" ||
+    typeof state !== "string" ||
+    typeof country !== "string" ||
     typeof venueType !== "string" ||
     typeof email !== "string" ||
     typeof contactPerson !== "string" ||
@@ -31,6 +35,8 @@ export async function createVenue(formData: FormData) {
     body: JSON.stringify({
       name,
       city,
+      state: state || null,
+      country: country || null,
       venue_type: venueType,
       email: email || null,
       contact_person: contactPerson || null,
@@ -67,6 +73,8 @@ export async function updateVenue(formData: FormData) {
   const id = formData.get("id");
   const name = formData.get("name");
   const city = formData.get("city");
+  const state = formData.get("state");
+  const country = formData.get("country");
   const venueType = formData.get("venue_type");
   const email = formData.get("email");
   const contactPerson = formData.get("contact_person");
@@ -77,6 +85,8 @@ export async function updateVenue(formData: FormData) {
     typeof id !== "string" ||
     typeof name !== "string" ||
     typeof city !== "string" ||
+    typeof state !== "string" ||
+    typeof country !== "string" ||
     typeof venueType !== "string" ||
     typeof email !== "string" ||
     typeof contactPerson !== "string" ||
@@ -94,6 +104,8 @@ export async function updateVenue(formData: FormData) {
     body: JSON.stringify({
       name,
       city,
+      state: state || null,
+      country: country || null,
       venue_type: venueType,
       email: email || null,
       contact_person: contactPerson || null,

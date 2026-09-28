@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #151210;
+  --foreground: #f3eadf;
 }
 
 @theme inline {
@@ -12,15 +12,190 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.25rem;
+}
+
+th,
+td {
+  border: 1px solid #4a3c32;
+  padding: 0.6rem;
+  text-align: left;
+}
+
+th {
+  background: #211c18;
+}
+
+.resizable-table {
+  width: 100%;
+  margin-top: 1.25rem;
+  overflow: hidden;
+  border-top: 1px solid #4a3c32;
+  border-left: 1px solid #4a3c32;
+  font-size: 0.72rem;
+}
+
+.resizable-table-row {
+  position: relative;
+  display: grid;
+  width: 100%;
+}
+
+.resizable-table-cell {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  overflow: hidden;
+  border-right: 1px solid #4a3c32;
+  border-bottom: 1px solid #4a3c32;
+}
+
+.resizable-table-header .resizable-table-cell {
+  position: relative;
+  min-height: 2rem;
+  background: #211c18;
+  padding: 0.3rem 0.4rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.resizable-table-data-row:hover {
+  background: #1d1916;
+}
+
+.resizable-table-cell input,
+.resizable-table-cell select,
+.resizable-table-cell textarea {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 0.25rem 0.35rem;
+  text-overflow: ellipsis;
+}
+
+.resizable-table-cell textarea {
+  resize: none;
+}
+
+.resizable-table-text {
+  overflow: hidden;
+  padding: 0.25rem 0.35rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resizable-table-cell:focus-within {
+  box-shadow: inset 0 0 0 1px #b98555;
+}
+
+.resizable-table-actions {
+  gap: 0.2rem;
+  padding: 0.15rem;
+}
+
+.resizable-table-actions > form[id] {
+  display: none;
+}
+
+.resizable-table-actions > button,
+.resizable-table-actions > form:not([id]) {
+  min-width: 0;
+  flex: 1;
+}
+
+.resizable-table-actions > form:not([id]) button {
+  width: 100%;
+}
+
+.resizable-table-button {
+  height: 1.45rem;
+  overflow: hidden;
+  border-radius: 3px;
+  padding: 0 0.25rem;
+  font-size: 0.62rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.column-resize-handle {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: -3px;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+}
+
+.row-resize-handle {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: -2px;
+  left: 0;
+  height: 5px;
+  cursor: row-resize;
+}
+
+.column-resize-handle:hover,
+.row-resize-handle:hover {
+  background: #b98555;
+}
+
+button {
+  cursor: pointer;
+  border: 1px solid #5a4738;
+  border-radius: 6px;
+  background: #2b231e;
+  color: var(--foreground);
+  padding: 0 0.75rem;
+}
+
+button:hover {
+  background: #3a2f27;
+}
+
+.primary-button {
+  border-color: #b77843;
+  background: #965d31;
+}
+
+.primary-button:hover {
+  background: #ad6d39;
+}
+
+.danger-button {
+  border-color: #74443f;
+  background: #3c2321;
+  color: #f0bbb5;
+}
+
+input,
+select,
+button {
+  height: 2.4rem;
+  box-sizing: border-box;
+}
+
+input,
+select,
+textarea {
+  background: #211c18;
+  border: 1px solid #4a3c32;
+  border-radius: 8px;
+  padding: 0.4rem 0.65rem;
 }

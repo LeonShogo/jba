@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Link from "next/link";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,10 +22,22 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="de"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-screen flex">
+        <aside className="w-40 shrink-0 border-r border-[#4a3c32] p-4">
+          <strong className="text-sm">Jazz Booking</strong>
+          <nav className="mt-6 flex flex-col gap-3 text-sm">
+            <Link href="/">Übersicht</Link>
+            <Link href="/bands">Bands</Link>
+            <Link href="/venues">Clubs & Festivals</Link>
+            <Link href="/bookings">Bookings</Link>
+            <Link href="/email-drafts">E-Mail-Entwürfe</Link>
+          </nav>
+        </aside>
+        <div className="min-w-0 flex-1 p-4">{children}</div>
+      </body>
     </html>
   );
 }

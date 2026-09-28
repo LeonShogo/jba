@@ -1,15 +1,5 @@
-import { createVenue, deleteVenue, updateVenue } from "../actions";
-
-type Venue = {
-  venue_type: "club" | "festival";
-  id: number;
-  name: string;
-  city: string;
-  email: string | null;
-  contact_person: string | null;
-  website: string | null;
-  phone: string | null;
-};
+import { createVenue } from "../actions";
+import { VenueTable, type Venue } from "./VenueTable";
 
 export default async function VenuesPage() {
   const response = await fetch(`${process.env.API_URL}/venues`, {
@@ -24,57 +14,60 @@ export default async function VenuesPage() {
 
   return (
     <>
-      <h1>Venues & Festivals</h1>
-      <form action={createVenue}>
-        <input type="text" name="name" placeholder="Venue Name" required />
-        <input type="text" name="city" placeholder="City" required />
-        <input type="email" name="email" placeholder="E-Mail" />
-        <input name="contact_person" placeholder="Ansprechperson" />
-        <input type="url" name="website" placeholder="Website" />
-        <input type="tel" name="phone" placeholder="Telefon" />
-        <select name="venue_type" defaultValue="club">
+      <h1 className="text-2xl font-semibold">Venues & Festivals</h1>
+      <form
+        action={createVenue}
+        className="mt-4 flex flex-wrap items-center gap-2"
+      >
+        <input
+          className="w-44"
+          type="text"
+          name="name"
+          placeholder="Venue Name"
+          required
+        />
+        <input
+          className="w-28"
+          type="text"
+          name="city"
+          placeholder="Stadt"
+          required
+        />
+        <input className="w-36" name="state" placeholder="Bundesland" />
+        <input className="w-28" name="country" placeholder="Land" />
+        <input
+          className="w-56"
+          type="email"
+          name="email"
+          placeholder="E-Mail"
+        />
+        <input
+          className="w-36"
+          name="contact_person"
+          placeholder="Ansprechperson"
+        />
+        <input
+          className="w-56"
+          type="url"
+          name="website"
+          placeholder="Website"
+        />
+        <input
+          className="w-36"
+          type="tel"
+          name="phone"
+          placeholder="Telefon"
+        />
+        <select className="w-28" name="venue_type" defaultValue="club">
           <option value="club">Club</option>
           <option value="festival">Festival</option>
         </select>
-        <button type="submit">Venue erstellen</button>
+        <button className="primary-button" type="submit">
+          Venue erstellen
+        </button>
       </form>
-      <ul>
-        {venues.map((venue) => (
-          <li key={venue.id}>
-            {venue.name} - {venue.city}
-            <form action={updateVenue}>
-              <input type="hidden" name="id" value={venue.id} />
-              <input name="name" defaultValue={venue.name} required />
-              <input name="city" defaultValue={venue.city} required />
-              <input
-                type="email"
-                name="email"
-                defaultValue={venue.email ?? ""}
-              />
-              <input
-                name="contact_person"
-                defaultValue={venue.contact_person ?? ""}
-              />
-              <input
-                type="url"
-                name="website"
-                defaultValue={venue.website ?? ""}
-              />
-              <input type="tel" name="phone" defaultValue={venue.phone ?? ""} />
-              ({venue.venue_type})
-              <select name="venue_type" defaultValue={venue.venue_type}>
-                <option value="club">Club</option>
-                <option value="festival">Festival</option>
-              </select>
-              <button type="submit">Speichern</button>
-            </form>
-            <form action={deleteVenue}>
-              <input type="hidden" name="id" value={venue.id} />
-              <button type="submit">Löschen</button>
-            </form>
-          </li>
-        ))}
-      </ul>
+
+      <VenueTable venues={venues} />
     </>
   );
 }

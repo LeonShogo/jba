@@ -23,21 +23,33 @@ export default async function BandsPage() {
         <input name="name" placeholder="Bandname" required />
         <button type="submit">Band erstellen</button>
       </form>
-      <ul>
-        {bands.map((band) => (
-          <li key={band.id}>
-            <form action={updateBand}>
-              <input type="hidden" name="id" value={band.id} />
-              <input name="name" defaultValue={band.name} required />
-              <button type="submit">Speichern</button>
-            </form>
-            <form action={deleteBand}>
-              <input type="hidden" name="id" value={band.id} />
-              <button type="submit">Band löschen</button>
-            </form>
-          </li>
-        ))}
-      </ul>
+      <table>
+  <thead>
+    <tr>
+      <th>Band bearbeiten</th>
+      <th>Aktion</th>
+    </tr>
+  </thead>
+  <tbody>
+    {bands.map((band) => (
+      <tr key={band.id}>
+        <td>
+          <form action={updateBand} className="flex items-center gap-2">
+            <input type="hidden" name="id" value={band.id} />
+            <input name="name" defaultValue={band.name} required />
+            <button type="submit">Speichern</button>
+          </form>
+        </td>
+        <td>
+          <form action={deleteBand}>
+            <input type="hidden" name="id" value={band.id} />
+            <button type="submit">Löschen</button>
+          </form>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
     </>
   );
 }

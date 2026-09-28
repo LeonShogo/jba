@@ -13,6 +13,8 @@ class VenueModel(Base):
     name: Mapped[str] = mapped_column(String(200))
     venue_type: Mapped[str] = mapped_column(String(50), default=VenueType.CLUB.value)
     city: Mapped[str] = mapped_column(String(100))
+    state: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    country: Mapped[str | None] = mapped_column(String(100), nullable=True)
     website: Mapped[str | None] = mapped_column(String(500), nullable=True)
     contact_person: Mapped[str | None] = mapped_column(String(200), nullable=True)
     email: Mapped[str | None] = mapped_column(String(200), nullable=True)
