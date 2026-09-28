@@ -15,5 +15,3 @@ class BookingStatus(str, Enum):
 class EmailDraftStatus(str, Enum):
     DRAFT = "draft"
     APPROVED = "approved"
-    SENT = "sent"
-

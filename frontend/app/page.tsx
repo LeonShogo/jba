@@ -9,6 +9,7 @@ export default function Home() {
         <Link href="/bands">Bands</Link>
         <Link href="/venues">Clubs & Festivals</Link>
         <Link href="/bookings">Bookings</Link>
+        <Link href="/email-drafts">E-Mail-Entwürfe</Link>
       </nav>
     </main>
   );

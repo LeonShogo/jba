@@ -229,3 +229,77 @@ export async function deleteBand(formData: FormData) {
 
   revalidatePath("/bands");
 }
+
+export async function createEmailDraft(formData: FormData) {
+  const bookingId = Number(formData.get("booking_id"));
+  const recipientEmail = formData.get("recipient_email");
+  const subject = formData.get("subject");
+  const body = formData.get("body");
+
+  if (
+    bookingId <= 0 ||
+    typeof recipientEmail !== "string" ||
+    typeof subject !== "string" ||
+    typeof body !== "string" ||
+    !recipientEmail.trim() ||
+    !subject.trim() ||
+    !body.trim()
+  ) {
+    throw new Error("Alle Entwurfsfelder müssen ausgefüllt sein.");
+  }
+
+  const response = await fetch(`${process.env.API_URL}/email-drafts`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      booking_id: bookingId,
+      recipient_email: recipientEmail,
+      subject,
+      body,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("E-Mail-Entwurf konnte nicht erstellt werden.");
+  }
+
+  revalidatePath("/email-drafts");
+}
+
+export async function updateEmailDraft(formData: FormData) {
+  const id = Number(formData.get("id"));
+  const recipientEmail = formData.get("recipient_email");
+  const subject = formData.get("subject");
+  const body = formData.get("body");
+  const status = formData.get("status");
+
+  if (
+    id <= 0 ||
+    typeof recipientEmail !== "string" ||
+    typeof subject !== "string" ||
+    typeof body !== "string" ||
+    (status !== "draft" && status !== "approved") ||
+    !recipientEmail.trim() ||
+    !subject.trim() ||
+    !body.trim()
+  ) {
+    throw new Error("Ungültige Entwurfsdaten.");
+  }
+
+  const response = await fetch(`${process.env.API_URL}/email-drafts/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      recipient_email: recipientEmail,
+      subject,
+      body,
+      status,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("E-Mail-Entwurf konnte nicht aktualisiert werden.");
+  }
+
+  revalidatePath("/email-drafts");
+}
