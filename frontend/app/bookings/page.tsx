@@ -19,23 +19,43 @@ type Venue = {
   name: string;
 };
 
-export default async function BookingPage() {
-  const [bookingsResponse, bandsResponse, venuesResponse] = await Promise.all([
-    fetch(`${process.env.API_URL}/bookings`, { cache: "no-store" }),
-    fetch(`${process.env.API_URL}/bands`, { cache: "no-store" }),
-    fetch(`${process.env.API_URL}/venues`, { cache: "no-store" }),
-  ]);
+type EmailDraftReference = {
+  booking_id: number;
+};
 
-  if (!bookingsResponse.ok || !bandsResponse.ok || !venuesResponse.ok) {
+export default async function BookingPage() {
+  const [bookingsResponse, bandsResponse, venuesResponse, draftsResponse] =
+    await Promise.all([
+      fetch(`${process.env.API_URL}/bookings`, { cache: "no-store" }),
+      fetch(`${process.env.API_URL}/bands`, { cache: "no-store" }),
+      fetch(`${process.env.API_URL}/venues`, { cache: "no-store" }),
+      fetch(`${process.env.API_URL}/email-drafts`, { cache: "no-store" }),
+    ]);
+
+  if (
+    !bookingsResponse.ok ||
+    !bandsResponse.ok ||
+    !venuesResponse.ok ||
+    !draftsResponse.ok
+  ) {
     throw new Error("Booking-Daten konnten nicht geladen werden.");
   }
 
   const bookings: Booking[] = await bookingsResponse.json();
   const bands: Band[] = await bandsResponse.json();
   const venues: Venue[] = await venuesResponse.json();
+  const drafts: EmailDraftReference[] = await draftsResponse.json();
 
   const bandNames = new Map(bands.map((band) => [band.id, band.name]));
   const venueNames = new Map(venues.map((venue) => [venue.id, venue.name]));
+  const draftCounts = new Map<number, number>();
+
+  for (const draft of drafts) {
+    draftCounts.set(
+      draft.booking_id,
+      (draftCounts.get(draft.booking_id) ?? 0) + 1,
+    );
+  }
 
   const bookingRows: BookingRow[] = bookings.map((booking) => ({
     id: booking.id,
@@ -43,6 +63,7 @@ export default async function BookingPage() {
     venueName: venueNames.get(booking.venue_id) ?? "Unbekanntes Venue",
     status: booking.status,
     notes: booking.notes,
+    draftCount: draftCounts.get(booking.id) ?? 0,
   }));
 
   return (

@@ -35,3 +35,4 @@ frontend/.env.local
 backend/.venv/
 backend/__pycache__/
 backend/.postgres-data/
+backend/uploads/

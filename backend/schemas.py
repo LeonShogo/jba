@@ -8,6 +8,19 @@ class Band(BaseModel):
     website: str | None = None
     contact_person: str | None = None
     phone: str | None = None
+    genre: str | None = None
+    lineup: str | None = None
+    equipment: str | None = None
+    equipment_pdf_url: str | None = None
+    epk_url: str | None = None
+    photo_url: str | None = None
+    music_url: str | None = None
+    tech_rider_url: str | None = None
+    stage_plan_url: str | None = None
+    description: str | None = None
+    band_text: str | None = None
+    description_pdf_url: str | None = None
+    band_text_pdf_url: str | None = None
 
 class BandCreate(BaseModel):
     name: str
@@ -15,6 +28,14 @@ class BandCreate(BaseModel):
     website: str | None = None
     contact_person: str | None = None
     phone: str | None = None
+    genre: str | None = None
+    lineup: str | None = None
+    equipment: str | None = None
+    epk_url: str | None = None
+    photo_url: str | None = None
+    music_url: str | None = None
+    description: str | None = None
+    band_text: str | None = None
 
 class BandUpdate(BaseModel):
     name: str | None = None
@@ -22,6 +43,14 @@ class BandUpdate(BaseModel):
     website: str | None = None
     contact_person: str | None = None
     phone: str | None = None
+    genre: str | None = None
+    lineup: str | None = None
+    equipment: str | None = None
+    epk_url: str | None = None
+    photo_url: str | None = None
+    music_url: str | None = None
+    description: str | None = None
+    band_text: str | None = None
 
 class Venue(BaseModel):
     id: int

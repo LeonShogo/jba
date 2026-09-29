@@ -1,6 +1,8 @@
+from pathlib import Path
+import shutil
 
-from fastapi import FastAPI, HTTPException
-from fastapi import Depends
+from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi.staticfiles import StaticFiles
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -9,6 +11,18 @@ from models import BandModel, VenueModel, BookingModel, EmailDraftModel
 from schemas import Band, BandCreate, BandUpdate, Venue, VenueCreate, VenueUpdate, Booking, BookingCreate, BookingUpdate, EmailDraft,EmailDraftCreate, EmailDraftUpdate
 
 app = FastAPI()
+upload_directory = Path(__file__).resolve().parent / "uploads"
+upload_directory.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=upload_directory), name="uploads")
+
+band_document_fields = {
+    "equipment": "equipment_pdf_url",
+    "tech-rider": "tech_rider_url",
+    "stage-plan": "stage_plan_url",
+    "description": "description_pdf_url",
+    "band-text": "band_text_pdf_url",
+}
+maximum_pdf_size = 10 * 1024 * 1024
 
 
 @app.get("/health")
@@ -131,6 +145,60 @@ def delete_band(band_id: int, db: Session = Depends(get_db)) -> None:
     if band is None:
         raise HTTPException(status_code=404, detail="Band not found")
     db.delete(band)
+    db.commit()
+    shutil.rmtree(upload_directory / "bands" / str(band_id), ignore_errors=True)
+
+
+@app.post("/bands/{band_id}/documents/{document_type}", response_model=Band)
+async def upload_band_document(
+    band_id: int,
+    document_type: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+) -> BandModel:
+    band = db.get(BandModel, band_id)
+    if band is None:
+        raise HTTPException(status_code=404, detail="Band not found")
+
+    field = band_document_fields.get(document_type)
+    if field is None:
+        raise HTTPException(status_code=400, detail="Unknown document type")
+
+    contents = await file.read(maximum_pdf_size + 1)
+    await file.close()
+    if len(contents) > maximum_pdf_size:
+        raise HTTPException(status_code=413, detail="PDF is larger than 10 MB")
+    if file.content_type != "application/pdf" or b"%PDF-" not in contents[:1024]:
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+
+    band_directory = upload_directory / "bands" / str(band_id)
+    band_directory.mkdir(parents=True, exist_ok=True)
+    file_path = band_directory / f"{document_type}.pdf"
+    file_path.write_bytes(contents)
+
+    setattr(band, field, f"/uploads/bands/{band_id}/{document_type}.pdf")
+    db.commit()
+    db.refresh(band)
+    return band
+
+
+@app.delete("/bands/{band_id}/documents/{document_type}", status_code=204)
+def delete_band_document(
+    band_id: int,
+    document_type: str,
+    db: Session = Depends(get_db),
+) -> None:
+    band = db.get(BandModel, band_id)
+    if band is None:
+        raise HTTPException(status_code=404, detail="Band not found")
+
+    field = band_document_fields.get(document_type)
+    if field is None:
+        raise HTTPException(status_code=400, detail="Unknown document type")
+
+    file_path = upload_directory / "bands" / str(band_id) / f"{document_type}.pdf"
+    file_path.unlink(missing_ok=True)
+    setattr(band, field, None)
     db.commit()
 
 @app.get("/email-drafts", response_model=list[EmailDraft])

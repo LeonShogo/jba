@@ -206,19 +206,107 @@ export async function deleteBooking(formData: FormData) {
 export async function updateBand(formData: FormData) {
   const id = Number(formData.get("id"));
   const name = formData.get("name");
+  const optionalFields = [
+    "genre",
+    "lineup",
+    "website",
+    "epk_url",
+    "photo_url",
+    "music_url",
+    "equipment",
+    "description",
+    "band_text",
+  ] as const;
 
   if (id <= 0 || typeof name !== "string" || name.trim() === "") {
     throw new Error("Ungültige Banddaten.");
   }
 
+  const details = Object.fromEntries(
+    optionalFields.map((field) => {
+      const value = formData.get(field);
+      return [
+        field,
+        typeof value === "string" && value.trim() ? value.trim() : null,
+      ];
+    }),
+  );
+
   const response = await fetch(`${process.env.API_URL}/bands/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ name, ...details }),
   });
 
   if (!response.ok) {
     throw new Error("Band konnte nicht aktualisiert werden.");
+  }
+
+  revalidatePath("/bands");
+}
+
+const bandDocumentTypes = [
+  "equipment",
+  "tech-rider",
+  "stage-plan",
+  "description",
+  "band-text",
+] as const;
+
+export async function uploadBandDocument(formData: FormData) {
+  const bandId = Number(formData.get("band_id"));
+  const documentType = formData.get("document_type");
+  const file = formData.get("file");
+
+  if (
+    bandId <= 0 ||
+    typeof documentType !== "string" ||
+    !bandDocumentTypes.includes(
+      documentType as (typeof bandDocumentTypes)[number],
+    ) ||
+    !(file instanceof File) ||
+    file.type !== "application/pdf" ||
+    file.size === 0 ||
+    file.size > 10 * 1024 * 1024
+  ) {
+    throw new Error("Bitte eine PDF-Datei mit höchstens 10 MB auswählen.");
+  }
+
+  const uploadData = new FormData();
+  uploadData.set("file", file);
+  const response = await fetch(
+    `${process.env.API_URL}/bands/${bandId}/documents/${documentType}`,
+    { method: "POST", body: uploadData },
+  );
+
+  if (!response.ok) {
+    throw new Error("PDF konnte nicht hochgeladen werden.");
+  }
+
+  revalidatePath("/bands");
+}
+
+export async function deleteBandDocument(formData: FormData) {
+  const bandId = Number(formData.get("band_id"));
+  const documentType = formData.get("document_type");
+
+  if (
+    bandId <= 0 ||
+    typeof documentType !== "string" ||
+    !bandDocumentTypes.includes(
+      documentType as (typeof bandDocumentTypes)[number],
+    )
+  ) {
+    throw new Error("Ungültiges Banddokument.");
+  }
+
+  const response = await fetch(
+    `${process.env.API_URL}/bands/${bandId}/documents/${documentType}`,
+    { method: "DELETE" },
+  );
+
+  if (!response.ok) {
+    throw new Error("PDF konnte nicht entfernt werden.");
   }
 
   revalidatePath("/bands");

@@ -4,4 +4,5 @@ uvicorn[standard]==0.52.4
 sqlalchemy==2.0.52
 psycopg[binary]==3.3.5
 python-dotenv==1.2.3
+python-multipart==0.0.32
 alembic==1.20.0

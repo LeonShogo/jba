@@ -91,11 +91,153 @@ th {
   resize: none;
 }
 
+.resizable-table-cell .auto-grow-textarea {
+  height: auto;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
 .resizable-table-text {
   overflow: hidden;
   padding: 0.25rem 0.35rem;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.resizable-table-link {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0.25rem 0.35rem;
+  color: #ddb07f;
+  text-decoration: underline;
+  text-decoration-color: #76583e;
+  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.resizable-table-link:hover {
+  color: #f0c99f;
+}
+
+.band-link-status {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.band-link-status-saved {
+  color: #79b987;
+}
+
+.band-link-status-missing {
+  color: #93867a;
+}
+
+.band-link-status-invalid {
+  color: #d0a261;
+}
+
+.band-link-dialog {
+  width: min(28rem, 90vw);
+  border: 1px solid #6b5442;
+  border-radius: 8px;
+  background: #1b1714;
+  color: var(--foreground);
+  padding: 1rem;
+}
+
+.band-link-dialog::backdrop {
+  background: rgb(0 0 0 / 65%);
+}
+
+.band-link-dialog input {
+  width: 100%;
+  margin-top: 0.75rem;
+}
+
+.band-link-dialog a {
+  color: #ddb07f;
+  font-size: 0.8rem;
+  text-decoration: underline;
+}
+
+.band-content-status {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.status-saved {
+  color: #79b987;
+}
+
+.status-missing {
+  color: #93867a;
+}
+
+.band-pdf-controls {
+  margin-top: 1rem;
+  border-top: 1px solid #4a3c32;
+  padding-top: 0.75rem;
+}
+
+.band-pdf-controls > form {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.band-pdf-controls input[type="file"] {
+  height: auto;
+  margin: 0;
+  padding: 0.35rem;
+  font-size: 0.75rem;
+}
+
+.band-pdf-controls > p {
+  margin-top: 0.5rem;
+  color: #9f9185;
+  font-size: 0.7rem;
+}
+
+.band-text-dialog {
+  width: min(48rem, 90vw);
+  border: 1px solid #6b5442;
+  border-radius: 8px;
+  background: #1b1714;
+  color: var(--foreground);
+  padding: 1rem;
+}
+
+.band-text-dialog::backdrop {
+  background: rgb(0 0 0 / 65%);
+}
+
+.band-text-dialog textarea {
+  width: 100%;
+  height: 16rem;
+  margin-top: 0.75rem;
+  border: 1px solid #4a3c32;
+  border-radius: 6px;
+  background: #211c18;
+  padding: 0.75rem;
 }
 
 .resizable-table-cell:focus-within {
@@ -198,4 +340,42 @@ textarea {
   border: 1px solid #4a3c32;
   border-radius: 8px;
   padding: 0.4rem 0.65rem;
+}
+
+.compact-email-form input,
+.compact-email-form select,
+.compact-email-form button {
+  height: 2rem;
+  border-radius: 5px;
+  font-size: 0.75rem;
+}
+
+.compact-email-form textarea {
+  min-height: 5rem;
+  border-radius: 5px;
+  font-size: 0.75rem;
+}
+
+.email-thread {
+  border: 1px solid #4a3c32;
+  border-radius: 6px;
+  background: #1b1714;
+}
+
+.email-thread summary {
+  cursor: pointer;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.email-thread-content {
+  border-top: 1px solid #4a3c32;
+  padding: 0.75rem;
+}
+
+.email-thread-message {
+  margin-top: 0.75rem;
+  border-top: 1px solid #3b3028;
+  padding-top: 0.75rem;
 }

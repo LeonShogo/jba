@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { deleteBooking, updateBooking } from "../actions";
+import { AutoGrowTextarea } from "../AutoGrowTextarea";
 import { useResizableTable } from "../useResizableTable";
 
 export type BookingRow = {
@@ -9,10 +11,11 @@ export type BookingRow = {
   venueName: string;
   status: string;
   notes: string | null;
+  draftCount: number;
 };
 
-const initialColumnWidths = [20, 24, 18, 24, 14];
-const minimumColumnWidths = [10, 10, 10, 15, 10];
+const initialColumnWidths = [17, 20, 15, 20, 14, 14];
+const minimumColumnWidths = [9, 9, 8, 12, 8, 10];
 
 type BookingTableProps = {
   bookings: BookingRow[];
@@ -32,7 +35,7 @@ export function BookingTable({ bookings }: BookingTableProps) {
     minimumRowHeight: 32,
   });
 
-  const headers = ["Band", "Venue", "Status", "Notiz", "Aktionen"];
+  const headers = ["Band", "Venue", "Status", "Notiz", "E-Mail", "Aktionen"];
 
   return (
     <div className="resizable-table" role="table">
@@ -62,15 +65,22 @@ export function BookingTable({ bookings }: BookingTableProps) {
       <div role="rowgroup">
         {bookings.map((booking) => {
           const formId = `update-booking-${booking.id}`;
+          const draftReference =
+            booking.draftCount === 0
+              ? `${booking.bandName} – ${booking.venueName} · Entwurf anlegen`
+              : booking.draftCount === 1
+                ? `${booking.bandName} – ${booking.venueName} · Entwurf Nr. 1`
+                : `${booking.bandName} – ${booking.venueName} · Entwürfe Nr. 1–${booking.draftCount}`;
 
           return (
             <div
+              id={`booking-${booking.id}`}
               className="resizable-table-row resizable-table-data-row"
               role="row"
               key={booking.id}
               style={{
                 gridTemplateColumns,
-                height: rowHeights[booking.id] ?? 38,
+                minHeight: rowHeights[booking.id] ?? 38,
               }}
               suppressHydrationWarning
             >
@@ -97,11 +107,20 @@ export function BookingTable({ bookings }: BookingTableProps) {
                 </select>
               </div>
               <div className="resizable-table-cell" role="cell">
-                <textarea
+                <AutoGrowTextarea
                   form={formId}
                   name="notes"
                   defaultValue={booking.notes ?? ""}
                 />
+              </div>
+              <div className="resizable-table-cell" role="cell">
+                <Link
+                  className="resizable-table-link"
+                  href={`/email-drafts?booking_id=${booking.id}`}
+                  title={draftReference}
+                >
+                  {draftReference}
+                </Link>
               </div>
               <div
                 className="resizable-table-cell resizable-table-actions"

@@ -1,6 +1,7 @@
 "use client";
 
 import { deleteVenue, updateVenue } from "../actions";
+import { AutoGrowTextarea } from "../AutoGrowTextarea";
 import { useResizableTable } from "../useResizableTable";
 
 export type Venue = {
@@ -86,12 +87,12 @@ export function VenueTable({ venues }: VenueTableProps) {
               key={venue.id}
               style={{
                 gridTemplateColumns,
-                height: rowHeights[venue.id] ?? 30,
+                minHeight: rowHeights[venue.id] ?? 30,
               }}
               suppressHydrationWarning
             >
               <div className="resizable-table-cell" role="cell">
-                <input
+                <AutoGrowTextarea
                   form={formId}
                   name="name"
                   defaultValue={venue.name}
@@ -99,7 +100,7 @@ export function VenueTable({ venues }: VenueTableProps) {
                 />
               </div>
               <div className="resizable-table-cell" role="cell">
-                <input
+                <AutoGrowTextarea
                   form={formId}
                   name="city"
                   defaultValue={venue.city}
@@ -107,46 +108,43 @@ export function VenueTable({ venues }: VenueTableProps) {
                 />
               </div>
               <div className="resizable-table-cell" role="cell">
-                <input
+                <AutoGrowTextarea
                   form={formId}
                   name="state"
                   defaultValue={venue.state ?? ""}
                 />
               </div>
               <div className="resizable-table-cell" role="cell">
-                <input
+                <AutoGrowTextarea
                   form={formId}
                   name="country"
                   defaultValue={venue.country ?? ""}
                 />
               </div>
               <div className="resizable-table-cell" role="cell">
-                <input
+                <AutoGrowTextarea
                   form={formId}
-                  type="email"
                   name="email"
                   defaultValue={venue.email ?? ""}
                 />
               </div>
               <div className="resizable-table-cell" role="cell">
-                <input
+                <AutoGrowTextarea
                   form={formId}
                   name="contact_person"
                   defaultValue={venue.contact_person ?? ""}
                 />
               </div>
               <div className="resizable-table-cell" role="cell">
-                <input
+                <AutoGrowTextarea
                   form={formId}
-                  type="url"
                   name="website"
                   defaultValue={venue.website ?? ""}
                 />
               </div>
               <div className="resizable-table-cell" role="cell">
-                <input
+                <AutoGrowTextarea
                   form={formId}
-                  type="tel"
                   name="phone"
                   defaultValue={venue.phone ?? ""}
                 />
