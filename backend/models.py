@@ -1,10 +1,9 @@
 
 
-from sqlalchemy import String, Text
+from sqlalchemy import String, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Base
 from enums import VenueType, BookingStatus, EmailDraftStatus
-from sqlalchemy import String, ForeignKey
 
 class VenueModel(Base):
     __tablename__ = "venues"
