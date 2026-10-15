@@ -6,3 +6,8 @@ psycopg[binary]==3.3.5
 python-dotenv==1.2.3
 python-multipart==0.0.32
 alembic==1.20.0
+
+langgraph==1.2.15
+langchain-openai==1.7.2
+langgraph-cli[inmem]==0.4.35
+langchain-tavily==0.2.18
