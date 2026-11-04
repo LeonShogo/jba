@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 from enums import VenueType, BookingStatus, EmailDraftStatus
+from typing import Literal
+from pydantic import BaseModel, Field
 
 class Band(BaseModel):
     id: int
@@ -121,3 +122,11 @@ class EmailDraftUpdate(BaseModel):
     subject: str | None = None
     body: str | None = None
     status: EmailDraftStatus | None = None
+    
+class VenueResearchRequest(BaseModel):
+    country: str
+    region: str | None = None
+    venue_type: Literal["club", "festival", "both"]
+    max_results: int = Field(default=10, ge=1, le=20)
+    mode: Literal["review", "automatic"] = "review"
+    reference_artists: list[str] = Field(default_factory=list)

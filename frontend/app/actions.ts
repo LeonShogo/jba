@@ -2,7 +2,114 @@
 
 import { revalidatePath } from "next/cache";
 
-export async function createVenue(formData: FormData) {
+export type CreateVenueActionState = {
+  error: string | null;
+  success: boolean;
+};
+
+export type VenueResearchCandidate = {
+  venue_type: "club" | "festival";
+  name: string;
+  city: string;
+  state: string | null;
+  country: string | null;
+  website: string | null;
+  contact_person: string | null;
+  email: string | null;
+  phone: string | null;
+  source_url: string;
+};
+
+export type VenueResearchActionState = {
+  candidates: VenueResearchCandidate[];
+  error: string | null;
+  savedCount?: number;
+};
+
+export async function researchVenues(
+  _previousState: VenueResearchActionState,
+  formData: FormData,
+): Promise<VenueResearchActionState> {
+  const country = formData.get("country");
+  const region = formData.get("region");
+  const venueType = formData.get("venue_type");
+  const maxResults = Number(formData.get("max_results"));
+  const mode = formData.get("mode");
+  const referenceArtists = formData.get("reference_artists");
+
+  if (
+    typeof country !== "string" ||
+    country.trim() === "" ||
+    typeof region !== "string" ||
+    typeof referenceArtists !== "string" ||
+    (venueType !== "club" &&
+      venueType !== "festival" &&
+      venueType !== "both") ||
+    (mode !== "review" && mode !== "automatic") ||
+    !Number.isInteger(maxResults) ||
+    maxResults < 1 ||
+    maxResults > 20
+  ) {
+    return {
+      candidates: [],
+      error: "Bitte überprüfe die Recherche-Eingaben.",
+    };
+  }
+
+  const artists = referenceArtists
+    .split(",")
+    .map((artist) => artist.trim())
+    .filter(Boolean);
+
+  try {
+    const response = await fetch(`${process.env.API_URL}/venue-research`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        country: country.trim(),
+        region: region.trim() || null,
+        venue_type: venueType,
+        max_results: maxResults,
+        mode,
+        reference_artists: artists,
+      }),
+    });
+
+    if (!response.ok) {
+      return {
+        candidates: [],
+        error: "Die Venue-Recherche ist fehlgeschlagen.",
+      };
+    }
+
+    const result = (await response.json()) as {
+      venue_candidates: VenueResearchCandidate[];
+      saved_count: number;
+    };
+
+    if (result.saved_count > 0) {
+      revalidatePath("/venues");
+    }
+
+    return {
+      candidates: result.venue_candidates,
+      error: null,
+      savedCount: result.saved_count,
+    };
+  } catch {
+    return {
+      candidates: [],
+      error: "Das Backend konnte nicht erreicht werden.",
+    };
+  }
+}
+
+export async function createVenue(
+  _previousState: CreateVenueActionState,
+  formData: FormData,
+): Promise<CreateVenueActionState> {
   const name = formData.get("name");
   const city = formData.get("city");
   const state = formData.get("state");
@@ -45,11 +152,18 @@ export async function createVenue(formData: FormData) {
     }),
   });
 
+  if (response.status === 409) {
+    return {
+      error: "Diese Venue ist bereits vorhanden.",
+      success: false,
+    };
+  }
+
   if (!response.ok) {
     throw new Error("Club konnte nicht erstellt werden.");
   }
   revalidatePath("/venues");
-  return response.json();
+  return { error: null, success: true };
 }
 
 export async function deleteVenue(formData: FormData) {

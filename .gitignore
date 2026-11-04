@@ -36,3 +36,5 @@ backend/.venv/
 backend/__pycache__/
 backend/.postgres-data/
 backend/uploads/
+backend/.langgraph_api/
+

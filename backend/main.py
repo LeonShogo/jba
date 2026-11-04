@@ -8,7 +8,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from database import get_db
 from models import BandModel, VenueModel, BookingModel, EmailDraftModel
-from schemas import Band, BandCreate, BandUpdate, Venue, VenueCreate, VenueUpdate, Booking, BookingCreate, BookingUpdate, EmailDraft,EmailDraftCreate, EmailDraftUpdate
+from schemas import VenueResearchRequest, Band, BandCreate, BandUpdate, Venue, VenueCreate, VenueUpdate, Booking, BookingCreate, BookingUpdate, EmailDraft,EmailDraftCreate, EmailDraftUpdate
+from agents.venue_research import venue_research_graph
+
 
 app = FastAPI()
 upload_directory = Path(__file__).resolve().parent / "uploads"
@@ -29,6 +31,49 @@ maximum_pdf_size = 10 * 1024 * 1024
 def health():
     return {"status": "ok"}
 
+@app.post("/venue-research")
+def research_venues(data: VenueResearchRequest, db: Session = Depends(get_db),) -> dict[str, object]:
+    result = venue_research_graph.invoke(
+        data.model_dump()
+    )
+    candidates = result.get("venue_candidates", [])
+    
+    if data.mode == "review":
+        return {"venue_candidates": candidates, "saved_count": 0}
+    
+    saved_count = 0
+    
+    existing_venues = db.scalars(select(VenueModel)).all()
+    
+    existing_keys = { (venue.name.strip().casefold(), 
+                       venue.city.strip().casefold())
+                     for venue in existing_venues}
+    
+    for candidate in candidates:
+        key = ( 
+               candidate["name"].strip().casefold(),
+               candidate["city"].strip().casefold(),)
+        
+        if key in existing_keys:
+              continue
+          
+        venue_data = {}
+        
+        for field, value in candidate.items():
+            if field != "source_url":
+                venue_data[field] = value
+        
+        db.add(VenueModel(**venue_data))
+        existing_keys.add(key)
+        saved_count += 1
+    
+    db.commit()
+    
+    return {"venue_candidates": candidates, 
+            "saved_count": saved_count}
+    
+
+
 @app.get("/venues", response_model=list[Venue])
 def get_venues(db: Session = Depends(get_db)) -> list[Venue]:
     return list(db.scalars(select(VenueModel)).all())
@@ -42,6 +87,23 @@ def get_venue(venue_id: int, db: Session = Depends(get_db)) -> VenueModel:
 
 @app.post("/venues", response_model=Venue, status_code=201)
 def create_venue(data: VenueCreate, db: Session = Depends(get_db)) -> VenueModel:
+    
+    normalized_name = data.name.strip().casefold()
+    
+    normalized_city = data.city.strip().casefold()
+    
+    existing_venues = db.scalars(select(VenueModel)).all()
+    
+    for ex_venue in existing_venues:
+        
+        ex_name = ex_venue.name.strip().casefold()
+        
+        ex_city = ex_venue.city.strip().casefold()
+        
+        if ex_name == normalized_name and ex_city == normalized_city:
+            raise HTTPException(status_code=409, 
+                                detail="Die Venue ist bereits in der Datenbank enthalten")      
+    
     venue = VenueModel(**data.model_dump())
     db.add(venue)
     db.commit()

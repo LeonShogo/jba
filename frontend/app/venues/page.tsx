@@ -1,5 +1,6 @@
-import { createVenue } from "../actions";
+import { VenueCreateForm } from "./VenueCreateForm";
 import { VenueTable, type Venue } from "./VenueTable";
+import { VenueResearch } from "./VenueResearch";
 
 export default async function VenuesPage() {
   const response = await fetch(`${process.env.API_URL}/venues`, {
@@ -15,8 +16,8 @@ export default async function VenuesPage() {
   return (
     <>
       <h1 className="text-2xl font-semibold">Venues & Festivals</h1>
-      <form
-        action={createVenue}
+      <VenueResearch/>
+      <VenueCreateForm
         className="mt-4 flex flex-wrap items-center gap-2"
       >
         <input
@@ -65,7 +66,7 @@ export default async function VenuesPage() {
         <button className="primary-button" type="submit">
           Venue erstellen
         </button>
-      </form>
+      </VenueCreateForm>
 
       <VenueTable venues={venues} />
     </>
