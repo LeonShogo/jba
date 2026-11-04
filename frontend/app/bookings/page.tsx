@@ -1,4 +1,5 @@
-import { createBooking, deleteBooking, updateBooking } from "../actions";
+import { createBooking } from "../actions";
+import { BookingTable, type BookingRow } from "./BookingTable";
 
 type Booking = {
   id: number;
@@ -18,36 +19,61 @@ type Venue = {
   name: string;
 };
 
+type EmailDraftReference = {
+  booking_id: number;
+};
+
 export default async function BookingPage() {
-  const bookingsResponse = await fetch(`${process.env.API_URL}/bookings`, {
-    cache: "no-store",
-  });
+  const [bookingsResponse, bandsResponse, venuesResponse, draftsResponse] =
+    await Promise.all([
+      fetch(`${process.env.API_URL}/bookings`, { cache: "no-store" }),
+      fetch(`${process.env.API_URL}/bands`, { cache: "no-store" }),
+      fetch(`${process.env.API_URL}/venues`, { cache: "no-store" }),
+      fetch(`${process.env.API_URL}/email-drafts`, { cache: "no-store" }),
+    ]);
 
-  const bandsResponse = await fetch(`${process.env.API_URL}/bands`, {
-    cache: "no-store",
-  });
-
-  const venuesResponse = await fetch(`${process.env.API_URL}/venues`, {
-    cache: "no-store",
-  });
-
-  if (!bookingsResponse.ok || !bandsResponse.ok || !venuesResponse.ok) {
+  if (
+    !bookingsResponse.ok ||
+    !bandsResponse.ok ||
+    !venuesResponse.ok ||
+    !draftsResponse.ok
+  ) {
     throw new Error("Booking-Daten konnten nicht geladen werden.");
   }
 
   const bookings: Booking[] = await bookingsResponse.json();
   const bands: Band[] = await bandsResponse.json();
   const venues: Venue[] = await venuesResponse.json();
+  const drafts: EmailDraftReference[] = await draftsResponse.json();
 
   const bandNames = new Map(bands.map((band) => [band.id, band.name]));
-
   const venueNames = new Map(venues.map((venue) => [venue.id, venue.name]));
+  const draftCounts = new Map<number, number>();
+
+  for (const draft of drafts) {
+    draftCounts.set(
+      draft.booking_id,
+      (draftCounts.get(draft.booking_id) ?? 0) + 1,
+    );
+  }
+
+  const bookingRows: BookingRow[] = bookings.map((booking) => ({
+    id: booking.id,
+    bandName: bandNames.get(booking.band_id) ?? "Unbekannte Band",
+    venueName: venueNames.get(booking.venue_id) ?? "Unbekanntes Venue",
+    status: booking.status,
+    notes: booking.notes,
+    draftCount: draftCounts.get(booking.id) ?? 0,
+  }));
 
   return (
     <>
-      <h1>Bookings</h1>
-      <form action={createBooking}>
-        <select name="band_id" defaultValue="" required>
+      <h1 className="text-2xl font-semibold">Bookings</h1>
+      <form
+        action={createBooking}
+        className="mt-4 flex flex-wrap items-center gap-2"
+      >
+        <select className="w-48" name="band_id" defaultValue="" required>
           <option value="" disabled>
             Band wählen
           </option>
@@ -57,7 +83,7 @@ export default async function BookingPage() {
             </option>
           ))}
         </select>
-        <select name="venue_id" defaultValue="" required>
+        <select className="w-56" name="venue_id" defaultValue="" required>
           <option value="" disabled>
             Venue wählen
           </option>
@@ -67,37 +93,17 @@ export default async function BookingPage() {
             </option>
           ))}
         </select>
-        <textarea name="notes" placeholder="Notizen zum Booking" />
-        <button type="submit">Booking erstellen</button>
+        <textarea
+          className="h-10 min-h-10 w-80"
+          name="notes"
+          placeholder="Notizen zum Booking"
+        />
+        <button className="primary-button" type="submit">
+          Booking erstellen
+        </button>
       </form>
-      <ul>
-        {bookings.map((booking) => (
-          <li key={booking.id}>
-            {bandNames.get(booking.band_id)} →{" "}
-            {venueNames.get(booking.venue_id)}
-            {" — "}
-            {booking.status}
-            <form action={updateBooking}>
-              <input type="hidden" name="id" value={booking.id} />
-              <select name="status" defaultValue={booking.status}>
-                <option value="draft">Entwurf</option>
-                <option value="sent">Gesendet</option>
-                <option value="replied">Antwort erhalten</option>
-                <option value="follow_up">Nachfassen</option>
-                <option value="accepted">Zugesagt</option>
-                <option value="rejected">Abgelehnt</option>
-              </select>
-              <p>{booking.notes ?? "Keine Notiz"}</p>
-              <textarea name="notes" defaultValue={booking.notes ?? ""} />
-              <button type="submit">Änderungen speichern</button>
-            </form>
-            <form action={deleteBooking}>
-              <input type="hidden" name="id" value={booking.id} />
-              <button type="submit">Booking löschen</button>
-            </form>
-          </li>
-        ))}
-      </ul>
+
+      <BookingTable bookings={bookingRows} />
     </>
   );
 }

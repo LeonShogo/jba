@@ -2,9 +2,118 @@
 
 import { revalidatePath } from "next/cache";
 
-export async function createVenue(formData: FormData) {
+export type CreateVenueActionState = {
+  error: string | null;
+  success: boolean;
+};
+
+export type VenueResearchCandidate = {
+  venue_type: "club" | "festival";
+  name: string;
+  city: string;
+  state: string | null;
+  country: string | null;
+  website: string | null;
+  contact_person: string | null;
+  email: string | null;
+  phone: string | null;
+  source_url: string;
+};
+
+export type VenueResearchActionState = {
+  candidates: VenueResearchCandidate[];
+  error: string | null;
+  savedCount?: number;
+};
+
+export async function researchVenues(
+  _previousState: VenueResearchActionState,
+  formData: FormData,
+): Promise<VenueResearchActionState> {
+  const country = formData.get("country");
+  const region = formData.get("region");
+  const venueType = formData.get("venue_type");
+  const maxResults = Number(formData.get("max_results"));
+  const mode = formData.get("mode");
+  const referenceArtists = formData.get("reference_artists");
+
+  if (
+    typeof country !== "string" ||
+    country.trim() === "" ||
+    typeof region !== "string" ||
+    typeof referenceArtists !== "string" ||
+    (venueType !== "club" &&
+      venueType !== "festival" &&
+      venueType !== "both") ||
+    (mode !== "review" && mode !== "automatic") ||
+    !Number.isInteger(maxResults) ||
+    maxResults < 1 ||
+    maxResults > 20
+  ) {
+    return {
+      candidates: [],
+      error: "Bitte überprüfe die Recherche-Eingaben.",
+    };
+  }
+
+  const artists = referenceArtists
+    .split(",")
+    .map((artist) => artist.trim())
+    .filter(Boolean);
+
+  try {
+    const response = await fetch(`${process.env.API_URL}/venue-research`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        country: country.trim(),
+        region: region.trim() || null,
+        venue_type: venueType,
+        max_results: maxResults,
+        mode,
+        reference_artists: artists,
+      }),
+    });
+
+    if (!response.ok) {
+      return {
+        candidates: [],
+        error: "Die Venue-Recherche ist fehlgeschlagen.",
+      };
+    }
+
+    const result = (await response.json()) as {
+      venue_candidates: VenueResearchCandidate[];
+      saved_count: number;
+    };
+
+    if (result.saved_count > 0) {
+      revalidatePath("/venues");
+    }
+
+    return {
+      candidates: result.venue_candidates,
+      error: null,
+      savedCount: result.saved_count,
+    };
+  } catch {
+    return {
+      candidates: [],
+      error: "Das Backend konnte nicht erreicht werden.",
+    };
+  }
+}
+
+export async function createVenue(
+  _previousState: CreateVenueActionState,
+  formData: FormData,
+): Promise<CreateVenueActionState> {
   const name = formData.get("name");
   const city = formData.get("city");
+  const state = formData.get("state");
+  const country = formData.get("country");
   const venueType = formData.get("venue_type");
   const email = formData.get("email");
   const contactPerson = formData.get("contact_person");
@@ -14,6 +123,8 @@ export async function createVenue(formData: FormData) {
   if (
     typeof name !== "string" ||
     typeof city !== "string" ||
+    typeof state !== "string" ||
+    typeof country !== "string" ||
     typeof venueType !== "string" ||
     typeof email !== "string" ||
     typeof contactPerson !== "string" ||
@@ -31,6 +142,8 @@ export async function createVenue(formData: FormData) {
     body: JSON.stringify({
       name,
       city,
+      state: state || null,
+      country: country || null,
       venue_type: venueType,
       email: email || null,
       contact_person: contactPerson || null,
@@ -39,11 +152,18 @@ export async function createVenue(formData: FormData) {
     }),
   });
 
+  if (response.status === 409) {
+    return {
+      error: "Diese Venue ist bereits vorhanden.",
+      success: false,
+    };
+  }
+
   if (!response.ok) {
     throw new Error("Club konnte nicht erstellt werden.");
   }
   revalidatePath("/venues");
-  return response.json();
+  return { error: null, success: true };
 }
 
 export async function deleteVenue(formData: FormData) {
@@ -67,6 +187,8 @@ export async function updateVenue(formData: FormData) {
   const id = formData.get("id");
   const name = formData.get("name");
   const city = formData.get("city");
+  const state = formData.get("state");
+  const country = formData.get("country");
   const venueType = formData.get("venue_type");
   const email = formData.get("email");
   const contactPerson = formData.get("contact_person");
@@ -77,6 +199,8 @@ export async function updateVenue(formData: FormData) {
     typeof id !== "string" ||
     typeof name !== "string" ||
     typeof city !== "string" ||
+    typeof state !== "string" ||
+    typeof country !== "string" ||
     typeof venueType !== "string" ||
     typeof email !== "string" ||
     typeof contactPerson !== "string" ||
@@ -94,6 +218,8 @@ export async function updateVenue(formData: FormData) {
     body: JSON.stringify({
       name,
       city,
+      state: state || null,
+      country: country || null,
       venue_type: venueType,
       email: email || null,
       contact_person: contactPerson || null,
@@ -194,19 +320,107 @@ export async function deleteBooking(formData: FormData) {
 export async function updateBand(formData: FormData) {
   const id = Number(formData.get("id"));
   const name = formData.get("name");
+  const optionalFields = [
+    "genre",
+    "lineup",
+    "website",
+    "epk_url",
+    "photo_url",
+    "music_url",
+    "equipment",
+    "description",
+    "band_text",
+  ] as const;
 
   if (id <= 0 || typeof name !== "string" || name.trim() === "") {
     throw new Error("Ungültige Banddaten.");
   }
 
+  const details = Object.fromEntries(
+    optionalFields.map((field) => {
+      const value = formData.get(field);
+      return [
+        field,
+        typeof value === "string" && value.trim() ? value.trim() : null,
+      ];
+    }),
+  );
+
   const response = await fetch(`${process.env.API_URL}/bands/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ name, ...details }),
   });
 
   if (!response.ok) {
     throw new Error("Band konnte nicht aktualisiert werden.");
+  }
+
+  revalidatePath("/bands");
+}
+
+const bandDocumentTypes = [
+  "equipment",
+  "tech-rider",
+  "stage-plan",
+  "description",
+  "band-text",
+] as const;
+
+export async function uploadBandDocument(formData: FormData) {
+  const bandId = Number(formData.get("band_id"));
+  const documentType = formData.get("document_type");
+  const file = formData.get("file");
+
+  if (
+    bandId <= 0 ||
+    typeof documentType !== "string" ||
+    !bandDocumentTypes.includes(
+      documentType as (typeof bandDocumentTypes)[number],
+    ) ||
+    !(file instanceof File) ||
+    file.type !== "application/pdf" ||
+    file.size === 0 ||
+    file.size > 10 * 1024 * 1024
+  ) {
+    throw new Error("Bitte eine PDF-Datei mit höchstens 10 MB auswählen.");
+  }
+
+  const uploadData = new FormData();
+  uploadData.set("file", file);
+  const response = await fetch(
+    `${process.env.API_URL}/bands/${bandId}/documents/${documentType}`,
+    { method: "POST", body: uploadData },
+  );
+
+  if (!response.ok) {
+    throw new Error("PDF konnte nicht hochgeladen werden.");
+  }
+
+  revalidatePath("/bands");
+}
+
+export async function deleteBandDocument(formData: FormData) {
+  const bandId = Number(formData.get("band_id"));
+  const documentType = formData.get("document_type");
+
+  if (
+    bandId <= 0 ||
+    typeof documentType !== "string" ||
+    !bandDocumentTypes.includes(
+      documentType as (typeof bandDocumentTypes)[number],
+    )
+  ) {
+    throw new Error("Ungültiges Banddokument.");
+  }
+
+  const response = await fetch(
+    `${process.env.API_URL}/bands/${bandId}/documents/${documentType}`,
+    { method: "DELETE" },
+  );
+
+  if (!response.ok) {
+    throw new Error("PDF konnte nicht entfernt werden.");
   }
 
   revalidatePath("/bands");

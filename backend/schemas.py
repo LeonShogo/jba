@@ -1,5 +1,6 @@
-from pydantic import BaseModel
 from enums import VenueType, BookingStatus, EmailDraftStatus
+from typing import Literal
+from pydantic import BaseModel, Field
 
 class Band(BaseModel):
     id: int
@@ -8,6 +9,19 @@ class Band(BaseModel):
     website: str | None = None
     contact_person: str | None = None
     phone: str | None = None
+    genre: str | None = None
+    lineup: str | None = None
+    equipment: str | None = None
+    equipment_pdf_url: str | None = None
+    epk_url: str | None = None
+    photo_url: str | None = None
+    music_url: str | None = None
+    tech_rider_url: str | None = None
+    stage_plan_url: str | None = None
+    description: str | None = None
+    band_text: str | None = None
+    description_pdf_url: str | None = None
+    band_text_pdf_url: str | None = None
 
 class BandCreate(BaseModel):
     name: str
@@ -15,6 +29,14 @@ class BandCreate(BaseModel):
     website: str | None = None
     contact_person: str | None = None
     phone: str | None = None
+    genre: str | None = None
+    lineup: str | None = None
+    equipment: str | None = None
+    epk_url: str | None = None
+    photo_url: str | None = None
+    music_url: str | None = None
+    description: str | None = None
+    band_text: str | None = None
 
 class BandUpdate(BaseModel):
     name: str | None = None
@@ -22,12 +44,22 @@ class BandUpdate(BaseModel):
     website: str | None = None
     contact_person: str | None = None
     phone: str | None = None
+    genre: str | None = None
+    lineup: str | None = None
+    equipment: str | None = None
+    epk_url: str | None = None
+    photo_url: str | None = None
+    music_url: str | None = None
+    description: str | None = None
+    band_text: str | None = None
 
 class Venue(BaseModel):
     id: int
     venue_type: VenueType
     name: str
     city: str
+    state: str | None = None
+    country: str | None = None
     website: str | None = None
     contact_person: str | None = None
     email: str | None = None
@@ -37,6 +69,8 @@ class VenueCreate(BaseModel):
     venue_type: VenueType = VenueType.CLUB
     name: str
     city: str
+    state: str | None = None
+    country: str | None = None
     website: str | None = None
     contact_person: str | None = None
     email: str | None = None
@@ -46,6 +80,8 @@ class VenueUpdate(BaseModel):
     venue_type: VenueType | None = None
     name: str | None = None
     city: str | None = None
+    state: str | None = None
+    country: str | None = None
     website: str | None = None
     contact_person: str | None = None
     email: str | None = None
@@ -86,3 +122,11 @@ class EmailDraftUpdate(BaseModel):
     subject: str | None = None
     body: str | None = None
     status: EmailDraftStatus | None = None
+    
+class VenueResearchRequest(BaseModel):
+    country: str
+    region: str | None = None
+    venue_type: Literal["club", "festival", "both"]
+    max_results: int = Field(default=10, ge=1, le=20)
+    mode: Literal["review", "automatic"] = "review"
+    reference_artists: list[str] = Field(default_factory=list)
