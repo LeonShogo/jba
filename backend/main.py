@@ -3,6 +3,7 @@ import shutil
 
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.staticfiles import StaticFiles
+from schemas import EmailDraftGenerateRequest
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -10,7 +11,7 @@ from database import get_db
 from models import BandModel, VenueModel, BookingModel, EmailDraftModel
 from schemas import VenueResearchRequest, Band, BandCreate, BandUpdate, Venue, VenueCreate, VenueUpdate, Booking, BookingCreate, BookingUpdate, EmailDraft,EmailDraftCreate, EmailDraftUpdate
 from agents.venue_research import venue_research_graph
-
+from agents.email_draft import generate_email_draft
 
 app = FastAPI()
 upload_directory = Path(__file__).resolve().parent / "uploads"
