@@ -3,14 +3,16 @@ import shutil
 
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.staticfiles import StaticFiles
+from schemas import EmailDraftGenerateRequest
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from database import get_db
+from enums import EmailDraftStatus
 from models import BandModel, VenueModel, BookingModel, EmailDraftModel
 from schemas import VenueResearchRequest, Band, BandCreate, BandUpdate, Venue, VenueCreate, VenueUpdate, Booking, BookingCreate, BookingUpdate, EmailDraft,EmailDraftCreate, EmailDraftUpdate
 from agents.venue_research import venue_research_graph
-
+from agents.email_draft import generate_email_draft
 
 app = FastAPI()
 upload_directory = Path(__file__).resolve().parent / "uploads"
@@ -30,6 +32,78 @@ maximum_pdf_size = 10 * 1024 * 1024
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.post("/email-drafts/generate", response_model=EmailDraft, status_code=201)
+def generate_booking_email(data: EmailDraftGenerateRequest, 
+                           db: Session = Depends(get_db),) -> EmailDraftModel:
+    
+    booking = db.get(BookingModel, data.booking_id)
+    if booking is None:
+        raise HTTPException(status_code=404, detail="Booking nicht gefunden.")
+    
+    band = db.get(BandModel, booking.band_id)
+    venue = db.get(VenueModel, booking.venue_id)
+    
+    if band is None or venue is None:
+        raise HTTPException(status_code=404, detail="Band oder Venue nicht gefunden.")
+
+    recipient_email = (venue.email or "").strip()
+    if not recipient_email:
+        raise HTTPException(
+            status_code=422,
+            detail="Bitte zuerst eine E-Mail-Adresse für die Venue hinterlegen.",
+        )
+    
+    band_info = ( f"Bandname: {band.name}\n"
+                  f"Genre: {band.genre or 'Nicht angegeben.'}\n"
+                  f"Besetzung: {band.lineup or 'Nicht angegeben.'}\n"
+                  f"Beschreibung: {band.description or 'Nicht angegeben.'}\n"
+                  f"Bandtext: {band.band_text or 'Nicht angegeben'}\n"
+                  f"Website: {band.website or 'Nicht angegeben'}\n"
+                  f"Musiklink: {band.music_url or 'Nicht angegeben'}\n"
+                  f"Pressemappe: {band.epk_url or 'Nicht angegeben'}\n"
+                  f"Kontaktperson der Band: {band.contact_person or 'Nicht angegeben'}\n"
+                  f"Telefon der Band: {band.phone or 'Nicht angegeben'}\n"
+                  f"E-Mail der Band: {band.email or 'Nicht angegeben'}\n"
+                  )
+    
+    
+    
+    venue_info = (
+        f"Venuename: {venue.name}\n"
+        f"Venue-Typ: {venue.venue_type}\n"
+        f"Stadt: {venue.city}\n"
+        f"Bundesland oder Region: {venue.state or 'Nicht angegeben'}\n"
+        f"Land: {venue.country or 'Nicht angegeben'}\n"
+        f"Ansprechperson: {venue.contact_person or 'Nicht angegeben'}\n"
+        f"Website: {venue.website or 'Nicht angegeben'}\n"
+    )
+                    
+                    
+    tour_period = data.tour_period.strip()
+    if not tour_period:
+        raise HTTPException(status_code=422, detail="Bitte einen Tourzeitraum angeben.")
+
+    generated = generate_email_draft(
+        band_info=band_info,
+        venue_info=venue_info,
+        booking_notes=booking.notes or "",
+        tour_period=tour_period,
+    )
+    
+    draft = EmailDraftModel(
+        booking_id=booking.id,
+        recipient_email=recipient_email,
+        subject=generated.subject,
+        body=generated.body,
+        status=EmailDraftStatus.DRAFT.value,
+    )
+    db.add(draft)
+    db.commit()
+    db.refresh(draft)
+    return draft
+    
+    
 
 @app.post("/venue-research")
 def research_venues(data: VenueResearchRequest, db: Session = Depends(get_db),) -> dict[str, object]:

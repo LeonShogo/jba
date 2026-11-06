@@ -130,3 +130,7 @@ class VenueResearchRequest(BaseModel):
     max_results: int = Field(default=10, ge=1, le=20)
     mode: Literal["review", "automatic"] = "review"
     reference_artists: list[str] = Field(default_factory=list)
+
+class EmailDraftGenerateRequest(BaseModel):
+    booking_id: int = Field(gt=0)
+    tour_period: str = Field(min_length=1, max_length=200)
