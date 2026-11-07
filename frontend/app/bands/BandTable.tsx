@@ -1,6 +1,6 @@
 "use client";
 
-import type { MouseEvent as ReactMouseEvent } from "react";
+import type { MouseEvent as ReactMouseEvent, ReactNode } from "react";
 import {
   deleteBand,
   deleteBandDocument,
@@ -17,6 +17,7 @@ export type BandRow = {
   lineup: string | null;
   website: string | null;
   epk_url: string | null;
+  epk_contents: string[];
   photo_url: string | null;
   music_url: string | null;
   equipment: string | null;
@@ -31,6 +32,16 @@ export type BandRow = {
 
 const initialColumnWidths = [10, 7, 9, 8, 8, 7, 7, 9, 7, 7, 7, 7, 7];
 const minimumColumnWidths = [5, 4, 5, 5, 5, 4, 4, 5, 4, 4, 4, 4, 6];
+
+const epkContentOptions = [
+  ["photos", "Pressefotos"],
+  ["audio", "Album / Hörbeispiele"],
+  ["videos", "Videos"],
+  ["stage_plan", "Stageplan"],
+  ["tech_rider", "Tech Rider"],
+  ["short_bio", "Kurzer Bandankündigungstext"],
+  ["long_bio", "Langer Bandankündigungstext"],
+] as const;
 
 type BandTableProps = {
   bands: BandRow[];
@@ -165,7 +176,7 @@ function isUsableUrl(value: string | null) {
   }
 }
 
-function LinkDialogField({ formId, name, label, value }: FieldProps) {
+function LinkDialogField({ formId, name, label, value, children }: FieldProps & { children?: ReactNode }) {
   const dialogId = `${formId}-${name}`;
   const valid = isUsableUrl(value);
   const status = !value ? "missing" : valid ? "saved" : "invalid";
@@ -205,6 +216,7 @@ function LinkDialogField({ formId, name, label, value }: FieldProps) {
           placeholder="https://…"
           aria-label={label}
         />
+        {children}
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <button className="primary-button" type="submit" form={formId}>
             Speichern
@@ -413,7 +425,29 @@ export function BandTable({ bands, apiUrl }: BandTableProps) {
                 name="epk_url"
                 label={`EPK von ${band.name}`}
                 value={band.epk_url}
-              />
+              >
+                <fieldset className="mt-4">
+                  <legend className="text-sm font-semibold">Inhalte der EPK</legend>
+                  <p className="mt-1 text-xs text-[#b9aa9c]">
+                    Wähle die Materialien, die unter deinem EPK-Link verfügbar sind.
+                  </p>
+                  <div className="mt-3 grid gap-2">
+                    {epkContentOptions.map(([content, label]) => (
+                      <label className="flex items-center gap-2 text-sm" key={content}>
+                        <input
+                          className="epk-content-checkbox"
+                          type="checkbox"
+                          form={formId}
+                          name="epk_contents"
+                          value={content}
+                          defaultChecked={band.epk_contents.includes(content)}
+                        />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              </LinkDialogField>
               <LinkDialogField
                 formId={formId}
                 name="photo_url"

@@ -2,6 +2,70 @@
 
 import { revalidatePath } from "next/cache";
 
+export type GenerateEmailDraftState = {
+  error: string | null;
+  draftId?: number;
+  bookingId?: number;
+};
+
+export async function generateEmailDraft(
+  _previousState: GenerateEmailDraftState,
+  formData: FormData,
+): Promise<GenerateEmailDraftState> {
+  const bookingId = Number(formData.get("booking_id"));
+  const tourPeriod = formData.get("tour_period");
+  const notes = formData.get("notes");
+  const styleAttributes = formData.getAll("style_attributes");
+  const length = formData.get("length");
+  const allowedStyles = [
+    "professional", "casual", "formal", "warm", "personal", "direct",
+    "concise", "confident", "enthusiastic", "understated", "inviting",
+    "respectful", "vivid", "grounded", "elegant", "curious",
+  ];
+  if (
+    !Number.isInteger(bookingId) || bookingId <= 0 ||
+    typeof tourPeriod !== "string" || !tourPeriod.trim() || tourPeriod.length > 200 ||
+    typeof notes !== "string" || notes.length > 4000 ||
+    styleAttributes.length > 7 ||
+    styleAttributes.some((attribute) =>
+      typeof attribute !== "string" || !allowedStyles.includes(attribute),
+    )
+    || !["short", "medium", "long"].includes(String(length))
+  ) {
+    return { error: "Bitte Booking, Tourzeitraum und Moodboard-Auswahl überprüfen." };
+  }
+
+  let result: { id: number };
+  try {
+    const response = await fetch(`${process.env.API_URL}/email-drafts/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        booking_id: bookingId,
+        tour_period: tourPeriod.trim(),
+        notes: notes.trim(),
+        style_attributes: styleAttributes,
+        length,
+      }),
+    });
+    if (!response.ok) {
+      const failure = await response.json().catch(() => null);
+      return {
+        error: response.status < 500 && typeof failure?.detail === "string"
+          ? failure.detail
+          : "Der Entwurf konnte nicht erstellt werden. Bitte versuche es erneut.",
+      };
+    }
+    result = await response.json();
+  } catch {
+    return { error: "Die Verbindung zum Backend ist fehlgeschlagen. Prüfe vor einem erneuten Versuch die Entwurfsliste." };
+  }
+  revalidatePath("/email-drafts");
+  revalidatePath("/bookings");
+  revalidatePath("/");
+  return { error: null, draftId: result.id, bookingId };
+}
+
 export type CreateVenueActionState = {
   error: string | null;
   success: boolean;
@@ -320,6 +384,7 @@ export async function deleteBooking(formData: FormData) {
 export async function updateBand(formData: FormData) {
   const id = Number(formData.get("id"));
   const name = formData.get("name");
+  const epkContents = formData.getAll("epk_contents");
   const optionalFields = [
     "genre",
     "lineup",
@@ -349,7 +414,7 @@ export async function updateBand(formData: FormData) {
   const response = await fetch(`${process.env.API_URL}/bands/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, ...details }),
+    body: JSON.stringify({ name, ...details, epk_contents: epkContents }),
   });
 
   if (!response.ok) {
@@ -516,4 +581,20 @@ export async function updateEmailDraft(formData: FormData) {
   }
 
   revalidatePath("/email-drafts");
+}
+
+export async function deleteEmailDraft(formData: FormData) {
+  const id = Number(formData.get("id"));
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error("Ungültige Entwurfs-ID.");
+  }
+
+  const response = await fetch(`${process.env.API_URL}/email-drafts/${id}`, {
+    method: "DELETE",
+  });
+  if (!response.ok) {
+    throw new Error("E-Mail-Entwurf konnte nicht gelöscht werden.");
+  }
+  revalidatePath("/email-drafts");
+  revalidatePath("/");
 }

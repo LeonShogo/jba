@@ -54,6 +54,22 @@ def generate_booking_email(data: EmailDraftGenerateRequest,
             detail="Bitte zuerst eine E-Mail-Adresse für die Venue hinterlegen.",
         )
     
+    epk_labels = {
+        "photos": "Pressefotos",
+        "audio": "Album / Hörbeispiele",
+        "videos": "Videos",
+        "stage_plan": "Stageplan",
+        "tech_rider": "Tech Rider",
+        "short_bio": "kurzer Bandankündigungstext",
+        "long_bio": "langer Bandankündigungstext",
+    }
+        
+    selected_epk_labels = [
+        epk_labels[item] for item in band.epk_contents if item in epk_labels
+    ]
+    
+    epk_contents_text = ", ".join(selected_epk_labels)
+    
     band_info = ( f"Bandname: {band.name}\n"
                   f"Genre: {band.genre or 'Nicht angegeben.'}\n"
                   f"Besetzung: {band.lineup or 'Nicht angegeben.'}\n"
@@ -61,7 +77,8 @@ def generate_booking_email(data: EmailDraftGenerateRequest,
                   f"Bandtext: {band.band_text or 'Nicht angegeben'}\n"
                   f"Website: {band.website or 'Nicht angegeben'}\n"
                   f"Musiklink: {band.music_url or 'Nicht angegeben'}\n"
-                  f"Pressemappe: {band.epk_url or 'Nicht angegeben'}\n"
+                  f"Pressemappe/EPK: {band.epk_url or 'Nicht angegeben'}\n"
+                  f"Bestätigte EPK-Inhalte: {epk_contents_text or 'Keine Angaben'}\n"
                   f"Kontaktperson der Band: {band.contact_person or 'Nicht angegeben'}\n"
                   f"Telefon der Band: {band.phone or 'Nicht angegeben'}\n"
                   f"E-Mail der Band: {band.email or 'Nicht angegeben'}\n"
@@ -89,6 +106,9 @@ def generate_booking_email(data: EmailDraftGenerateRequest,
         venue_info=venue_info,
         booking_notes=booking.notes or "",
         tour_period=tour_period,
+        draft_notes=data.notes.strip(),
+        style_attributes=[attribute.value for attribute in data.style_attributes],
+        length=data.length,
     )
     
     draft = EmailDraftModel(

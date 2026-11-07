@@ -1,6 +1,6 @@
 
 
-from sqlalchemy import String, Text, ForeignKey
+from sqlalchemy import String, Text, ForeignKey, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Base
 from enums import VenueType, BookingStatus, EmailDraftStatus
@@ -34,6 +34,9 @@ class BandModel(Base):
     equipment: Mapped[str | None] = mapped_column(Text, nullable=True)
     equipment_pdf_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     epk_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    epk_contents: Mapped[list[str]] = mapped_column(
+        JSON, default=list, server_default="[]", nullable=False
+    )    
     photo_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     music_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     tech_rider_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
