@@ -164,6 +164,15 @@ th {
   margin-top: 0.75rem;
 }
 
+.band-link-dialog input.epk-content-checkbox {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+  accent-color: #b98555;
+}
+
 .band-link-dialog a {
   color: #ddb07f;
   font-size: 0.8rem;
@@ -340,6 +349,77 @@ textarea {
   border: 1px solid #4a3c32;
   border-radius: 8px;
   padding: 0.4rem 0.65rem;
+}
+
+.email-style-board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.email-length-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.email-style-card {
+  display: flex;
+  min-height: 3.75rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+  border: 1px solid #4a3c32;
+  border-radius: 0.65rem;
+  background: #211c18;
+  padding: 0.55rem;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+}
+
+.email-style-card:hover {
+  border-color: #b98555;
+  transform: translateY(-1px);
+}
+
+.email-style-card.selected {
+  border-color: #d39a63;
+  background: #3a281d;
+  box-shadow: inset 0 0 0 1px #b98555;
+}
+
+.email-style-card.disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.email-style-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.email-style-card-title {
+  color: #f3eadf;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.email-style-card-description {
+  color: #b9aa9a;
+  font-size: 0.65rem;
+}
+
+.compact-delete-button {
+  height: 1.9rem;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.72rem;
+}
+
+@media (min-width: 768px) {
+  .email-style-board {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .compact-email-form input,

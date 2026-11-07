@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { createEmailDraft, updateEmailDraft } from "../actions";
+import { createEmailDraft, deleteEmailDraft, updateEmailDraft } from "../actions";
+import { GenerateEmailDraftForm } from "./GenerateEmailDraftForm";
 
 type EmailDraft = {
   id: number;
@@ -109,6 +110,15 @@ export default async function EmailDraftsPage({
         </p>
       )}
 
+      <GenerateEmailDraftForm
+        key={selectedBookingId ?? "all"}
+        selectedBookingId={selectedBookingId}
+        bookings={bookings.map((booking) => ({
+          id: booking.id,
+          label: bookingLabels.get(booking.id) ?? `Booking ${booking.id}`,
+        }))}
+      />
+      <h2 className="mt-6 text-lg font-semibold">Entwurf manuell erstellen</h2>
       <form
         action={createEmailDraft}
         className="compact-email-form mt-4 grid max-w-3xl gap-2 md:grid-cols-2"
@@ -174,7 +184,7 @@ export default async function EmailDraftsPage({
                 Zugehöriges Booking öffnen
               </Link>
               {bookingDrafts.map((draft) => (
-                <section className="email-thread-message" key={draft.id}>
+                <section id={`draft-${draft.id}`} className="email-thread-message" key={draft.id}>
                   <div className="mb-2 flex items-center justify-between gap-3 text-xs">
                     <strong>Entwurf Nr. {draftNumbers.get(draft.id)}</strong>
                     <span className="text-[#b9aa9a]">
@@ -212,6 +222,12 @@ export default async function EmailDraftsPage({
                     />
                     <button className="primary-button w-fit" type="submit">
                       Änderungen speichern
+                    </button>
+                  </form>
+                  <form action={deleteEmailDraft} className="mt-2">
+                    <input type="hidden" name="id" value={draft.id} />
+                    <button className="danger-button compact-delete-button" type="submit">
+                      Entwurf löschen
                     </button>
                   </form>
                 </section>

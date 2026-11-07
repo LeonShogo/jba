@@ -1,6 +1,7 @@
-from enums import VenueType, BookingStatus, EmailDraftStatus
+from enums import VenueType, BookingStatus, EmailDraftStatus, EmailStyleAttribute
 from typing import Literal
 from pydantic import BaseModel, Field
+from enums import EpkContent
 
 class Band(BaseModel):
     id: int
@@ -14,6 +15,7 @@ class Band(BaseModel):
     equipment: str | None = None
     equipment_pdf_url: str | None = None
     epk_url: str | None = None
+    epk_contents: list[EpkContent] = Field(default_factory=list)
     photo_url: str | None = None
     music_url: str | None = None
     tech_rider_url: str | None = None
@@ -33,6 +35,7 @@ class BandCreate(BaseModel):
     lineup: str | None = None
     equipment: str | None = None
     epk_url: str | None = None
+    epk_contents: list[EpkContent] = Field(default_factory=list)
     photo_url: str | None = None
     music_url: str | None = None
     description: str | None = None
@@ -48,6 +51,7 @@ class BandUpdate(BaseModel):
     lineup: str | None = None
     equipment: str | None = None
     epk_url: str | None = None
+    epk_contents: list[EpkContent] = Field(default_factory=list)
     photo_url: str | None = None
     music_url: str | None = None
     description: str | None = None
@@ -134,3 +138,8 @@ class VenueResearchRequest(BaseModel):
 class EmailDraftGenerateRequest(BaseModel):
     booking_id: int = Field(gt=0)
     tour_period: str = Field(min_length=1, max_length=200)
+    notes: str = Field(default="", max_length=4000)
+    style_attributes: list[EmailStyleAttribute] = Field(
+        default_factory=list, max_length=7
+    )
+    length: Literal["short", "medium", "long"] = "medium"
