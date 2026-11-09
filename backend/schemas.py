@@ -143,3 +143,13 @@ class EmailDraftGenerateRequest(BaseModel):
         default_factory=list, max_length=7
     )
     length: Literal["short", "medium", "long"] = "medium"
+
+class EmailDraftBatchGenerateRequest(BaseModel):
+    booking_ids: list[int] = Field(min_length=1, max_length=20)
+    tour_period: str = Field(min_length=1, max_length=200)
+    notes: str = Field(default="", max_length=4000)
+    style_attributes: list[EmailStyleAttribute] = Field(
+        default_factory=list,
+        max_length=7
+    )
+    length: Literal["short", "medium", "long"] = "medium"

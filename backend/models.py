@@ -60,6 +60,7 @@ class EmailDraftModel(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     booking_id: Mapped[int] = mapped_column(ForeignKey("bookings.id"))
+    batch_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     recipient_email: Mapped[str] = mapped_column(String(200))
     subject: Mapped[str] = mapped_column(String(300))
     body: Mapped[str] = mapped_column(Text)
