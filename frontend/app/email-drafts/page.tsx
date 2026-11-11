@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createEmailDraft, deleteEmailDraft, updateEmailDraft } from "../actions";
+import { GenerateEmailDraftBatchForm } from "./GenerateEmailDraftBatchForm";
 import { GenerateEmailDraftForm } from "./GenerateEmailDraftForm";
 
 type EmailDraft = {
@@ -113,6 +114,12 @@ export default async function EmailDraftsPage({
       <GenerateEmailDraftForm
         key={selectedBookingId ?? "all"}
         selectedBookingId={selectedBookingId}
+        bookings={bookings.map((booking) => ({
+          id: booking.id,
+          label: bookingLabels.get(booking.id) ?? `Booking ${booking.id}`,
+        }))}
+      />
+      <GenerateEmailDraftBatchForm
         bookings={bookings.map((booking) => ({
           id: booking.id,
           label: bookingLabels.get(booking.id) ?? `Booking ${booking.id}`,
