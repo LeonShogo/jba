@@ -3,7 +3,8 @@ import shutil
 
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.staticfiles import StaticFiles
-from schemas import EmailDraftGenerateRequest
+from schemas import EmailDraftGenerateRequest, EmailDraftBatchGenerateRequest
+from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -113,6 +114,7 @@ def generate_booking_email(data: EmailDraftGenerateRequest,
     
     draft = EmailDraftModel(
         booking_id=booking.id,
+        tour_period=tour_period,
         recipient_email=recipient_email,
         subject=generated.subject,
         body=generated.body,
@@ -122,8 +124,111 @@ def generate_booking_email(data: EmailDraftGenerateRequest,
     db.commit()
     db.refresh(draft)
     return draft
-    
-    
+@app.post("/email-drafts/generate-batch", response_model=list[EmailDraft], status_code=201)
+def generate_booking_mail_batch(
+    data: EmailDraftBatchGenerateRequest,
+    db: Session = Depends(get_db),
+) -> list[EmailDraftModel]:
+    if data.band_id is not None:
+        if not data.venue_ids or len(set(data.venue_ids)) != len(data.venue_ids):
+            raise HTTPException(status_code=422, detail="Bitte mindestens ein Venue auswählen.")
+
+        if db.get(BandModel, data.band_id) is None:
+            raise HTTPException(status_code=404, detail="Band nicht gefunden.")
+
+        existing_bookings = db.scalars(
+            select(BookingModel).where(
+                BookingModel.band_id == data.band_id,
+                BookingModel.venue_id.in_(data.venue_ids),
+            )
+        ).all()
+        bookings_by_venue = {booking.venue_id: booking for booking in existing_bookings}
+        for venue_id in data.venue_ids:
+            if db.get(VenueModel, venue_id) is None:
+                raise HTTPException(status_code=404, detail="Venue nicht gefunden.")
+            if venue_id not in bookings_by_venue:
+                booking = BookingModel(band_id=data.band_id, venue_id=venue_id)
+                db.add(booking)
+                db.flush()
+                bookings_by_venue[venue_id] = booking
+        bookings = [bookings_by_venue[venue_id] for venue_id in data.venue_ids]
+    else:
+        if not data.booking_ids or len(set(data.booking_ids)) != len(data.booking_ids):
+            raise HTTPException(status_code=422, detail="Bitte Bookings auswählen.")
+        bookings = db.scalars(
+            select(BookingModel).where(BookingModel.id.in_(data.booking_ids))
+        ).all()
+        if len(bookings) != len(data.booking_ids):
+            raise HTTPException(status_code=404, detail="Mindestens ein Booking wurde nicht gefunden.")
+
+    prepared_bookings = []
+
+    for booking in bookings:
+        band = db.get(BandModel, booking.band_id)
+        venue = db.get(VenueModel, booking.venue_id)
+
+        if band is None or venue is None:
+            raise HTTPException(status_code=404, detail="Band oder Venue nicht gefunden.")
+
+        recipient_email = (venue.email or "").strip()
+        if not recipient_email:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Bitte E-Mail für Venue {venue.name} hinterlegen.",
+            )
+
+        prepared_bookings.append((booking, band, venue, recipient_email))
+
+    batch_id = str(uuid4())
+    drafts = []
+    tour_period = data.tour_period.strip()
+    if not tour_period:
+        raise HTTPException(status_code=422, detail="Bitte einen Tourzeitraum eingeben.")
+
+    for booking, band, venue, recipient_email in prepared_bookings:
+        band_info = (
+            f"Bandname: {band.name}\n"
+            f"Genre: {band.genre or 'Nicht angegeben.'}\n"
+            f"Besetzung: {band.lineup or 'Nicht angegeben.'}\n"
+            f"Beschreibung: {band.description or 'Nicht angegeben.'}\n"
+            f"EPK-Link: {band.epk_url or 'Nicht angegeben.'}\n"
+        )
+
+        venue_info = (
+            f"Venuename: {venue.name}\n"
+            f"Venue-Typ: {venue.venue_type}\n"
+            f"Stadt: {venue.city}\n"
+            f"Land: {venue.country or 'Nicht angegeben.'}\n"
+            f"Ansprechperson: {venue.contact_person or 'Nicht angegeben.'}\n"
+        )
+
+        generated = generate_email_draft(
+            band_info=band_info,
+            venue_info=venue_info,
+            booking_notes=booking.notes or "",
+            tour_period=tour_period,
+            draft_notes=data.notes.strip(),
+            style_attributes=[attribute.value for attribute in data.style_attributes],
+            length=data.length,
+        )
+
+        draft = EmailDraftModel(
+            booking_id=booking.id,
+            batch_id=batch_id,
+            tour_period=tour_period,
+            recipient_email=recipient_email,
+            subject=generated.subject,
+            body=generated.body,
+            status=EmailDraftStatus.DRAFT.value,
+        )
+        db.add(draft)
+        drafts.append(draft)
+
+    db.commit()
+    for draft in drafts:
+        db.refresh(draft)
+
+    return drafts
 
 @app.post("/venue-research")
 def research_venues(data: VenueResearchRequest, db: Session = Depends(get_db),) -> dict[str, object]:

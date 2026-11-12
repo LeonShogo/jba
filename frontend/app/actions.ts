@@ -6,6 +6,22 @@ export type GenerateEmailDraftState = {
   error: string | null;
   draftId?: number;
   bookingId?: number;
+  draft?: GeneratedEmailDraft;
+};
+
+export type GeneratedEmailDraft = {
+  id: number;
+  booking_id: number;
+  tour_period: string | null;
+  recipient_email: string;
+  subject: string;
+  body: string;
+  status: "draft" | "approved";
+};
+
+export type GenerateEmailDraftBatchState = {
+  error: string | null;
+  draftIds?: number[];
 };
 
 export async function generateEmailDraft(
@@ -35,7 +51,7 @@ export async function generateEmailDraft(
     return { error: "Bitte Booking, Tourzeitraum und Moodboard-Auswahl überprüfen." };
   }
 
-  let result: { id: number };
+  let result: GeneratedEmailDraft;
   try {
     const response = await fetch(`${process.env.API_URL}/email-drafts/generate`, {
       method: "POST",
@@ -63,7 +79,83 @@ export async function generateEmailDraft(
   revalidatePath("/email-drafts");
   revalidatePath("/bookings");
   revalidatePath("/");
-  return { error: null, draftId: result.id, bookingId };
+  return { error: null, draftId: result.id, bookingId, draft: result };
+}
+
+export async function regenerateEmailDraft(
+  formData: FormData,
+): Promise<GenerateEmailDraftState> {
+  return generateEmailDraft({ error: null }, formData);
+}
+
+export async function generateEmailDraftBatch(
+  _previousState: GenerateEmailDraftBatchState,
+  formData: FormData,
+): Promise<GenerateEmailDraftBatchState> {
+  const bandId = Number(formData.get("band_id"));
+  const venueIds = formData.getAll("venue_ids").map((value) => Number(value));
+  const draftCount = Number(formData.get("draft_count"));
+  const tourPeriod = formData.get("tour_period");
+  const notes = formData.get("notes");
+  const styleAttributes = formData.getAll("style_attributes");
+  const length = formData.get("length");
+  const allowedStyles = [
+    "professional", "casual", "formal", "warm", "personal", "direct",
+    "concise", "confident", "enthusiastic", "understated", "inviting",
+    "respectful", "vivid", "grounded", "elegant", "curious",
+  ];
+
+  if (
+    !Number.isInteger(draftCount) ||
+    draftCount < 1 ||
+    draftCount > 20 ||
+    !Number.isInteger(bandId) ||
+    bandId <= 0 ||
+    venueIds.length < 1 ||
+    venueIds.length > 20 ||
+    venueIds.length !== draftCount ||
+    venueIds.some((id) => !Number.isInteger(id) || id <= 0) ||
+    new Set(venueIds).size !== venueIds.length ||
+    typeof tourPeriod !== "string" || !tourPeriod.trim() || tourPeriod.length > 200 ||
+    typeof notes !== "string" || notes.length > 4000 ||
+    styleAttributes.length > 7 ||
+    styleAttributes.some((attribute) =>
+      typeof attribute !== "string" || !allowedStyles.includes(attribute),
+    ) ||
+    !["short", "medium", "long"].includes(String(length))
+  ) {
+    return { error: "Bitte Band, Venues, Tourzeitraum und Moodboard-Auswahl überprüfen." };
+  }
+
+  try {
+    const response = await fetch(`${process.env.API_URL}/email-drafts/generate-batch`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        band_id: bandId,
+        venue_ids: venueIds,
+        tour_period: tourPeriod.trim(),
+        notes: notes.trim(),
+        style_attributes: styleAttributes,
+        length,
+      }),
+    });
+    if (!response.ok) {
+      const failure = await response.json().catch(() => null);
+      return {
+        error: response.status < 500 && typeof failure?.detail === "string"
+          ? failure.detail
+          : "Die Entwürfe konnten nicht erstellt werden. Bitte versuche es erneut.",
+      };
+    }
+    const result = (await response.json()) as { id: number }[];
+    revalidatePath("/email-drafts");
+    revalidatePath("/bookings");
+    revalidatePath("/");
+    return { error: null, draftIds: result.map((draft) => draft.id) };
+  } catch {
+    return { error: "Die Verbindung zum Backend ist fehlgeschlagen." };
+  }
 }
 
 export type CreateVenueActionState = {

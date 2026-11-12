@@ -249,6 +249,50 @@ th {
   padding: 0.75rem;
 }
 
+.email-review-dialog {
+  width: min(58rem, 92vw);
+  max-height: 90vh;
+  overflow: auto;
+  border: 1px solid #6b5442;
+  border-radius: 10px;
+  background: #1b1714;
+  color: var(--foreground);
+  padding: 1.25rem;
+}
+
+.email-review-dialog::backdrop {
+  background: rgb(0 0 0 / 72%);
+}
+
+.email-review-dialog textarea {
+  width: 100%;
+  border: 1px solid #4a3c32;
+  border-radius: 6px;
+  background: #211c18;
+  padding: 0.75rem;
+}
+
+.email-review-regeneration {
+  border: 1px solid #4a3c32;
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+
+.email-review-quick-actions {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+  white-space: nowrap;
+}
+
+.email-review-quick-actions button {
+  flex: 0 0 auto;
+  height: 1.9rem;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.72rem;
+}
+
 .resizable-table-cell:focus-within {
   box-shadow: inset 0 0 0 1px #b98555;
 }
@@ -357,6 +401,66 @@ textarea {
   gap: 0.6rem;
 }
 
+.venue-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  max-height: 15rem;
+  overflow-y: auto;
+  padding: 0.15rem;
+}
+
+.venue-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.venue-filters input,
+.venue-filters select {
+  min-width: 0;
+  font-size: 0.8rem;
+}
+
+.venue-filters input {
+  grid-column: 1 / -1;
+}
+
+.venue-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  border: 1px solid #4a3c32;
+  border-radius: 0.55rem;
+  background: #211c18;
+  padding: 0.55rem 0.65rem;
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.venue-option:hover {
+  border-color: #b98555;
+}
+
+.venue-option.selected {
+  border-color: #d39a63;
+  background: #3a281d;
+  box-shadow: inset 0 0 0 1px #b98555;
+}
+
+.venue-option.disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.venue-option span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .email-length-board {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -410,15 +514,23 @@ textarea {
   font-size: 0.65rem;
 }
 
-.compact-delete-button {
-  height: 1.9rem;
-  padding: 0.25rem 0.55rem;
-  font-size: 0.72rem;
-}
-
 @media (min-width: 768px) {
   .email-style-board {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .venue-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .venue-filters input {
+    grid-column: auto;
+  }
+
+  .venue-picker {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -454,8 +566,41 @@ textarea {
   padding: 0.75rem;
 }
 
-.email-thread-message {
+.email-draft-card {
+  display: grid;
+  gap: 0.2rem;
   margin-top: 0.75rem;
   border-top: 1px solid #3b3028;
   padding-top: 0.75rem;
+  color: inherit;
+  text-decoration: none;
+  transition: background 120ms ease, padding 120ms ease;
+}
+
+.email-draft-card:hover {
+  background: #261f1a;
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+}
+
+.email-draft-card-subject {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.email-draft-card-recipient,
+.email-draft-card-action {
+  color: #b9aa9a;
+  font-size: 0.78rem;
+}
+
+.email-draft-card-action {
+  color: #ddb07f;
+  margin-top: 0.2rem;
+}
+
+.compact-delete-button {
+  padding: 0.25rem 0.55rem;
+  font-size: 0.72rem;
 }
