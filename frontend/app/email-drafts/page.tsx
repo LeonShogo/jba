@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { createEmailDraft, deleteEmailDraft, updateEmailDraft } from "../actions";
+import { deleteEmailDraft } from "../actions";
 import { GenerateEmailDraftBatchForm } from "./GenerateEmailDraftBatchForm";
-import { GenerateEmailDraftForm } from "./GenerateEmailDraftForm";
+import { DraftReviewDialog } from "./DraftReviewDialog";
 
 type EmailDraft = {
   id: number;
   booking_id: number;
+  tour_period: string | null;
   recipient_email: string;
   subject: string;
   body: string;
@@ -21,17 +22,24 @@ type Booking = {
 type NamedRecord = {
   id: number;
   name: string;
+  country?: string | null;
+  state?: string | null;
+  city?: string | null;
 };
 
 type EmailDraftsPageProps = {
-  searchParams: Promise<{ booking_id?: string }>;
+  searchParams: Promise<{ booking_id?: string; review?: string }>;
 };
 
 export default async function EmailDraftsPage({
   searchParams,
 }: EmailDraftsPageProps) {
-  const { booking_id: bookingIdParameter } = await searchParams;
+  const {
+    booking_id: bookingIdParameter,
+    review: reviewParameter,
+  } = await searchParams;
   const requestedBookingId = Number(bookingIdParameter);
+  const reviewDraftId = Number(reviewParameter);
 
   const [draftsResponse, bookingsResponse, bandsResponse, venuesResponse] =
     await Promise.all([
@@ -106,67 +114,15 @@ export default async function EmailDraftsPage({
 
       {selectedBookingId && (
         <p className="mt-4 rounded border border-[#4a3c32] bg-[#211c18] p-3 text-sm">
-          Angezeigt wird {bookingLabels.get(selectedBookingId)}. Der neue
-          Entwurf wird diesem Booking zugeordnet.
+          Angezeigt wird {bookingLabels.get(selectedBookingId)}. Die KI-Maske
+          kann unabhängig davon neue Bookings für ausgewählte Venues anlegen.
         </p>
       )}
 
-      <GenerateEmailDraftForm
-        key={selectedBookingId ?? "all"}
-        selectedBookingId={selectedBookingId}
-        bookings={bookings.map((booking) => ({
-          id: booking.id,
-          label: bookingLabels.get(booking.id) ?? `Booking ${booking.id}`,
-        }))}
-      />
       <GenerateEmailDraftBatchForm
-        bookings={bookings.map((booking) => ({
-          id: booking.id,
-          label: bookingLabels.get(booking.id) ?? `Booking ${booking.id}`,
-        }))}
+        bands={bands}
+        venues={venues}
       />
-      <h2 className="mt-6 text-lg font-semibold">Entwurf manuell erstellen</h2>
-      <form
-        action={createEmailDraft}
-        className="compact-email-form mt-4 grid max-w-3xl gap-2 md:grid-cols-2"
-      >
-        <select
-          name="booking_id"
-          defaultValue={selectedBookingId?.toString() ?? ""}
-          required
-        >
-          <option value="" disabled>
-            Booking wählen
-          </option>
-          {bookings.map((booking) => (
-            <option key={booking.id} value={booking.id}>
-              {bookingLabels.get(booking.id)}
-            </option>
-          ))}
-        </select>
-        <input
-          type="email"
-          name="recipient_email"
-          placeholder="Empfängeradresse"
-          required
-        />
-        <input
-          className="md:col-span-2"
-          name="subject"
-          placeholder="Betreff"
-          required
-        />
-        <textarea
-          className="md:col-span-2"
-          name="body"
-          placeholder="E-Mail-Text"
-          required
-        />
-        <button className="primary-button w-fit" type="submit">
-          Entwurf speichern
-        </button>
-      </form>
-
       <p className="mt-6 text-sm text-[#b9aa9a]">
         {visibleDrafts.length}{" "}
         {visibleDrafts.length === 1 ? "Entwurf" : "Entwürfe"}
@@ -191,50 +147,30 @@ export default async function EmailDraftsPage({
                 Zugehöriges Booking öffnen
               </Link>
               {bookingDrafts.map((draft) => (
-                <section id={`draft-${draft.id}`} className="email-thread-message" key={draft.id}>
-                  <div className="mb-2 flex items-center justify-between gap-3 text-xs">
-                    <strong>Entwurf Nr. {draftNumbers.get(draft.id)}</strong>
-                    <span className="text-[#b9aa9a]">
-                      {draft.status === "approved"
-                        ? "Freigegeben"
-                        : "Entwurf"}
-                    </span>
-                  </div>
-                  <form
-                    action={updateEmailDraft}
-                    className="compact-email-form grid gap-2 md:grid-cols-2"
+                <section className="email-draft-entry" key={draft.id}>
+                  <Link
+                    id={`draft-${draft.id}`}
+                    className="email-draft-card"
+                    href={selectedBookingId
+                      ? `/email-drafts?booking_id=${selectedBookingId}&review=${draft.id}`
+                      : `/email-drafts?review=${draft.id}`}
                   >
-                    <input type="hidden" name="id" value={draft.id} />
-                    <input
-                      type="email"
-                      name="recipient_email"
-                      defaultValue={draft.recipient_email}
-                      required
-                    />
-                    <select name="status" defaultValue={draft.status}>
-                      <option value="draft">Entwurf</option>
-                      <option value="approved">Freigegeben</option>
-                    </select>
-                    <input
-                      className="md:col-span-2"
-                      name="subject"
-                      defaultValue={draft.subject}
-                      required
-                    />
-                    <textarea
-                      className="md:col-span-2"
-                      name="body"
-                      defaultValue={draft.body}
-                      required
-                    />
-                    <button className="primary-button w-fit" type="submit">
-                      Änderungen speichern
-                    </button>
-                  </form>
+                    <div className="mb-2 flex items-center justify-between gap-3 text-xs">
+                      <strong>Entwurf Nr. {draftNumbers.get(draft.id)}</strong>
+                      <span className="text-[#b9aa9a]">
+                        {draft.status === "approved"
+                          ? "Freigegeben"
+                          : "Entwurf"}
+                      </span>
+                    </div>
+                    <strong className="email-draft-card-subject">{draft.subject || "Ohne Betreff"}</strong>
+                    <span className="email-draft-card-recipient">{draft.recipient_email}</span>
+                    <span className="email-draft-card-action">Öffnen und prüfen →</span>
+                  </Link>
                   <form action={deleteEmailDraft} className="mt-2">
                     <input type="hidden" name="id" value={draft.id} />
-                    <button className="danger-button compact-delete-button" type="submit">
-                      Entwurf löschen
+                    <button type="submit" className="danger-button compact-delete-button">
+                      Direkt löschen
                     </button>
                   </form>
                 </section>
@@ -243,6 +179,14 @@ export default async function EmailDraftsPage({
           </details>
         ))}
       </div>
+      <DraftReviewDialog
+        drafts={visibleDrafts}
+        initialDraftId={
+          visibleDrafts.some((draft) => draft.id === reviewDraftId)
+            ? reviewDraftId
+            : null
+        }
+      />
     </main>
   );
 }
