@@ -110,6 +110,7 @@ class BookingUpdate(BaseModel):
 class EmailDraft(BaseModel):
     id: int
     booking_id: int
+    tour_period: str | None = None
     recipient_email: str
     subject: str
     body: str
@@ -117,11 +118,13 @@ class EmailDraft(BaseModel):
 
 class EmailDraftCreate(BaseModel):
     booking_id: int
+    tour_period: str | None = None
     recipient_email: str
     subject: str
     body: str
 
 class EmailDraftUpdate(BaseModel):
+    tour_period: str | None = None
     recipient_email: str | None = None
     subject: str | None = None
     body: str | None = None
@@ -145,7 +148,9 @@ class EmailDraftGenerateRequest(BaseModel):
     length: Literal["short", "medium", "long"] = "medium"
 
 class EmailDraftBatchGenerateRequest(BaseModel):
-    booking_ids: list[int] = Field(min_length=1, max_length=20)
+    booking_ids: list[int] = Field(default_factory=list, max_length=20)
+    band_id: int | None = Field(default=None, gt=0)
+    venue_ids: list[int] = Field(default_factory=list, max_length=20)
     tour_period: str = Field(min_length=1, max_length=200)
     notes: str = Field(default="", max_length=4000)
     style_attributes: list[EmailStyleAttribute] = Field(

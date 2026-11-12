@@ -114,6 +114,7 @@ def generate_booking_email(data: EmailDraftGenerateRequest,
     
     draft = EmailDraftModel(
         booking_id=booking.id,
+        tour_period=tour_period,
         recipient_email=recipient_email,
         subject=generated.subject,
         body=generated.body,
@@ -128,21 +129,37 @@ def generate_booking_mail_batch(
     data: EmailDraftBatchGenerateRequest,
     db: Session = Depends(get_db),
 ) -> list[EmailDraftModel]:
-    if len(set(data.booking_ids)) != len(data.booking_ids):
-        raise HTTPException(
-            status_code=422,
-            detail="Ein Booking wurde mehrfach ausgewählt.",
-        )
+    if data.band_id is not None:
+        if not data.venue_ids or len(set(data.venue_ids)) != len(data.venue_ids):
+            raise HTTPException(status_code=422, detail="Bitte mindestens ein Venue auswählen.")
 
-    bookings = db.scalars(
-        select(BookingModel).where(BookingModel.id.in_(data.booking_ids))
-    ).all()
+        if db.get(BandModel, data.band_id) is None:
+            raise HTTPException(status_code=404, detail="Band nicht gefunden.")
 
-    if len(bookings) != len(data.booking_ids):
-        raise HTTPException(
-            status_code=404,
-            detail="Mindestens ein Booking wurde nicht gefunden.",
-        )
+        existing_bookings = db.scalars(
+            select(BookingModel).where(
+                BookingModel.band_id == data.band_id,
+                BookingModel.venue_id.in_(data.venue_ids),
+            )
+        ).all()
+        bookings_by_venue = {booking.venue_id: booking for booking in existing_bookings}
+        for venue_id in data.venue_ids:
+            if db.get(VenueModel, venue_id) is None:
+                raise HTTPException(status_code=404, detail="Venue nicht gefunden.")
+            if venue_id not in bookings_by_venue:
+                booking = BookingModel(band_id=data.band_id, venue_id=venue_id)
+                db.add(booking)
+                db.flush()
+                bookings_by_venue[venue_id] = booking
+        bookings = [bookings_by_venue[venue_id] for venue_id in data.venue_ids]
+    else:
+        if not data.booking_ids or len(set(data.booking_ids)) != len(data.booking_ids):
+            raise HTTPException(status_code=422, detail="Bitte Bookings auswählen.")
+        bookings = db.scalars(
+            select(BookingModel).where(BookingModel.id.in_(data.booking_ids))
+        ).all()
+        if len(bookings) != len(data.booking_ids):
+            raise HTTPException(status_code=404, detail="Mindestens ein Booking wurde nicht gefunden.")
 
     prepared_bookings = []
 
@@ -198,6 +215,7 @@ def generate_booking_mail_batch(
         draft = EmailDraftModel(
             booking_id=booking.id,
             batch_id=batch_id,
+            tour_period=tour_period,
             recipient_email=recipient_email,
             subject=generated.subject,
             body=generated.body,
