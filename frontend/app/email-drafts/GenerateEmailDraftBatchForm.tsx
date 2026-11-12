@@ -79,9 +79,9 @@ export function GenerateEmailDraftBatchForm({
   }
 
   return (
-    <section className="mt-6 max-w-3xl rounded-lg border border-[#4a3c32] p-4">
+    <section className="email-generator-panel mt-6 max-w-4xl border border-subtle surface-card p-4">
       <h2 className="text-lg font-semibold">KI-Mail-Entwürfe erstellen</h2>
-      <p className="mt-1 text-sm text-[#b9aa9a]">
+      <p className="mt-1 text-sm text-muted">
         Eine Band auswählen, mehrere Venues markieren und für jedes Venue direkt ein Booking mit Mail-Entwurf anlegen.
       </p>
       {bands.length === 0 || venues.length === 0 ? (
@@ -143,7 +143,7 @@ export function GenerateEmailDraftBatchForm({
                     );
                   })}
                 </div>
-                <p className="mt-1 text-xs text-[#b9aa9a]">{filteredVenues.length} Venues angezeigt, alphabetisch sortiert.</p>
+                <p className="mt-1 text-xs text-muted">{filteredVenues.length} Venues angezeigt, alphabetisch sortiert.</p>
               </fieldset>
               <label className="flex flex-col gap-1 text-sm">
                 Anzahl Entwürfe
@@ -160,7 +160,7 @@ export function GenerateEmailDraftBatchForm({
                 />
               </label>
             </div>
-            <p className="text-xs text-[#b9aa9a]">
+            <p className="text-xs text-muted">
               {selectedVenues.length} von {draftCount || "…"} Venues ausgewählt.
             </p>
 
@@ -184,7 +184,7 @@ export function GenerateEmailDraftBatchForm({
                   );
                 })}
               </div>
-              <p className="mt-2 text-xs text-[#b9aa9a]">{selectedStyles.length} von 7 Eigenschaften ausgewählt</p>
+              <p className="mt-2 text-xs text-muted">{selectedStyles.length} von 7 Eigenschaften ausgewählt</p>
             </fieldset>
 
             <fieldset>

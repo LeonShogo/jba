@@ -45,20 +45,20 @@ export default async function Home() {
   return (
     <main>
       <h1 className="text-2xl font-semibold">Übersicht</h1>
-      <p className="mt-1 text-sm text-[#b9aa9c]">
+      <p className="mt-1 text-sm text-muted">
         Bands, Venues und Booking-Anfragen auf einen Blick.
       </p>
 
       <section className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {sections.map((section) => (
           <Link
-            className="flex min-h-32 flex-col justify-between rounded-lg border border-[#4a3c32] bg-[#1d1916] p-4 transition hover:-translate-y-0.5 hover:border-[#b98555] hover:bg-[#211c18]"
+            className="home-card flex min-h-32 flex-col justify-between"
             href={section.href}
             key={section.href}
           >
-            <span className="text-sm text-[#cdbdac]">{section.title}</span>
+            <span className="text-sm text-soft">{section.title}</span>
             <strong className="text-3xl font-semibold">{section.count}</strong>
-            <span className="text-xs text-[#9f9185]">
+            <span className="text-xs text-muted">
               {section.description}
             </span>
           </Link>
