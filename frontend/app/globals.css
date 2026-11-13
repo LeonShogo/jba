@@ -1,8 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  --background: #151210;
-  --foreground: #f3eadf;
+  --background: #0b0f13;
+  --foreground: #e8edf2;
+  --surface-1: #12171d;
+  --surface-2: #18212a;
+  --surface-3: #202d38;
+  --line: #2b3a46;
+  --line-strong: #3d5364;
+  --muted: #91a1ae;
+  --soft: #c4ced6;
+  --accent: #6fa5c7;
+  --accent-strong: #98c0d8;
+  --success: #87d3a5;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --background: #e3eaed;
+  --foreground: #1d2831;
+  --surface-1: #f0f4f5;
+  --surface-2: #e1eaee;
+  --surface-3: #d4e0e5;
+  --line: #c0d0d8;
+  --line-strong: #97adb9;
+  --muted: #667883;
+  --soft: #465a66;
+  --accent: #3f7692;
+  --accent-strong: #2f617b;
+  --success: #377448;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -13,9 +40,38 @@
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(circle at 92% -10%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 28rem),
+    var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  letter-spacing: -0.01em;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 32%, transparent);
+  color: var(--foreground);
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 table {
@@ -26,21 +82,21 @@ table {
 
 th,
 td {
-  border: 1px solid #4a3c32;
+  border: 1px solid var(--line);
   padding: 0.6rem;
   text-align: left;
 }
 
 th {
-  background: #211c18;
+  background: var(--surface-2);
 }
 
 .resizable-table {
   width: 100%;
   margin-top: 1.25rem;
   overflow: hidden;
-  border-top: 1px solid #4a3c32;
-  border-left: 1px solid #4a3c32;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
   font-size: 0.72rem;
 }
 
@@ -55,21 +111,21 @@ th {
   min-width: 0;
   align-items: center;
   overflow: hidden;
-  border-right: 1px solid #4a3c32;
-  border-bottom: 1px solid #4a3c32;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 .resizable-table-header .resizable-table-cell {
   position: relative;
   min-height: 2rem;
-  background: #211c18;
+  background: var(--surface-2);
   padding: 0.3rem 0.4rem;
   font-weight: 600;
   line-height: 1.1;
 }
 
 .resizable-table-data-row:hover {
-  background: #1d1916;
+  background: var(--surface-2);
 }
 
 .resizable-table-cell input,
@@ -111,16 +167,16 @@ th {
   min-width: 0;
   overflow: hidden;
   padding: 0.25rem 0.35rem;
-  color: #ddb07f;
+  color: var(--accent);
   text-decoration: underline;
-  text-decoration-color: #76583e;
+  text-decoration-color: var(--line-strong);
   text-overflow: ellipsis;
   overflow-wrap: anywhere;
   white-space: normal;
 }
 
 .resizable-table-link:hover {
-  color: #f0c99f;
+  color: var(--accent-strong);
 }
 
 .band-link-status {
@@ -139,7 +195,7 @@ th {
 }
 
 .band-link-status-missing {
-  color: #93867a;
+  color: #8293a0;
 }
 
 .band-link-status-invalid {
@@ -148,9 +204,9 @@ th {
 
 .band-link-dialog {
   width: min(28rem, 90vw);
-  border: 1px solid #6b5442;
-  border-radius: 8px;
-  background: #1b1714;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface-1);
   color: var(--foreground);
   padding: 1rem;
 }
@@ -170,11 +226,11 @@ th {
   margin: 0;
   padding: 0;
   flex-shrink: 0;
-  accent-color: #b98555;
+  accent-color: var(--accent);
 }
 
 .band-link-dialog a {
-  color: #ddb07f;
+  color: var(--accent);
   font-size: 0.8rem;
   text-decoration: underline;
 }
@@ -199,12 +255,12 @@ th {
 }
 
 .status-missing {
-  color: #93867a;
+  color: #8293a0;
 }
 
 .band-pdf-controls {
   margin-top: 1rem;
-  border-top: 1px solid #4a3c32;
+  border-top: 1px solid var(--line);
   padding-top: 0.75rem;
 }
 
@@ -222,15 +278,15 @@ th {
 
 .band-pdf-controls > p {
   margin-top: 0.5rem;
-  color: #9f9185;
+  color: var(--muted);
   font-size: 0.7rem;
 }
 
 .band-text-dialog {
   width: min(48rem, 90vw);
-  border: 1px solid #6b5442;
-  border-radius: 8px;
-  background: #1b1714;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface-1);
   color: var(--foreground);
   padding: 1rem;
 }
@@ -243,9 +299,9 @@ th {
   width: 100%;
   height: 16rem;
   margin-top: 0.75rem;
-  border: 1px solid #4a3c32;
-  border-radius: 6px;
-  background: #211c18;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-2);
   padding: 0.75rem;
 }
 
@@ -253,9 +309,9 @@ th {
   width: min(58rem, 92vw);
   max-height: 90vh;
   overflow: auto;
-  border: 1px solid #6b5442;
-  border-radius: 10px;
-  background: #1b1714;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface-1);
   color: var(--foreground);
   padding: 1.25rem;
 }
@@ -266,15 +322,15 @@ th {
 
 .email-review-dialog textarea {
   width: 100%;
-  border: 1px solid #4a3c32;
-  border-radius: 6px;
-  background: #211c18;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-2);
   padding: 0.75rem;
 }
 
 .email-review-regeneration {
-  border: 1px solid #4a3c32;
-  border-radius: 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
   padding: 0.75rem;
 }
 
@@ -294,7 +350,7 @@ th {
 }
 
 .resizable-table-cell:focus-within {
-  box-shadow: inset 0 0 0 1px #b98555;
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 
 .resizable-table-actions {
@@ -348,33 +404,34 @@ th {
 
 .column-resize-handle:hover,
 .row-resize-handle:hover {
-  background: #b98555;
+  background: var(--accent);
 }
 
 button {
   cursor: pointer;
-  border: 1px solid #5a4738;
-  border-radius: 6px;
-  background: #2b231e;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: var(--surface-2);
   color: var(--foreground);
   padding: 0 0.75rem;
 }
 
 button:hover {
-  background: #3a2f27;
+  background: var(--surface-3);
 }
 
 .primary-button {
-  border-color: #b77843;
-  background: #965d31;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #f3f7fa;
 }
 
 .primary-button:hover {
-  background: #ad6d39;
+  background: var(--accent-strong);
 }
 
 .danger-button {
-  border-color: #74443f;
+  border-color: #a55d55;
   background: #3c2321;
   color: #f0bbb5;
 }
@@ -389,9 +446,10 @@ button {
 input,
 select,
 textarea {
-  background: #211c18;
-  border: 1px solid #4a3c32;
-  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--foreground);
   padding: 0.4rem 0.65rem;
 }
 
@@ -431,9 +489,9 @@ textarea {
   align-items: center;
   gap: 0.5rem;
   min-width: 0;
-  border: 1px solid #4a3c32;
-  border-radius: 0.55rem;
-  background: #211c18;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-2);
   padding: 0.55rem 0.65rem;
   cursor: pointer;
   font-size: 0.82rem;
@@ -441,13 +499,13 @@ textarea {
 }
 
 .venue-option:hover {
-  border-color: #b98555;
+  border-color: var(--accent);
 }
 
 .venue-option.selected {
-  border-color: #d39a63;
-  background: #3a281d;
-  box-shadow: inset 0 0 0 1px #b98555;
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 
 .venue-option.disabled {
@@ -473,23 +531,23 @@ textarea {
   flex-direction: column;
   justify-content: center;
   gap: 0.2rem;
-  border: 1px solid #4a3c32;
-  border-radius: 0.65rem;
-  background: #211c18;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface-2);
   padding: 0.55rem;
   cursor: pointer;
   transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
 }
 
 .email-style-card:hover {
-  border-color: #b98555;
+  border-color: var(--accent);
   transform: translateY(-1px);
 }
 
 .email-style-card.selected {
-  border-color: #d39a63;
-  background: #3a281d;
-  box-shadow: inset 0 0 0 1px #b98555;
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 
 .email-style-card.disabled {
@@ -504,13 +562,13 @@ textarea {
 }
 
 .email-style-card-title {
-  color: #f3eadf;
+  color: var(--foreground);
   font-size: 0.78rem;
   font-weight: 600;
 }
 
 .email-style-card-description {
-  color: #b9aa9a;
+  color: var(--muted);
   font-size: 0.65rem;
 }
 
@@ -549,20 +607,50 @@ textarea {
 }
 
 .email-thread {
-  border: 1px solid #4a3c32;
+  border: 1px solid var(--line);
   border-radius: 6px;
-  background: #1b1714;
+  background: var(--surface-1);
+}
+
+.email-thread-row {
+  position: relative;
 }
 
 .email-thread summary {
   cursor: pointer;
   padding: 0.65rem 0.75rem;
+  padding-right: 5.5rem;
+  color: var(--soft);
   font-size: 0.8rem;
   font-weight: 600;
 }
 
+.email-thread-summary-actions {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.55rem;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.email-thread-delete-button {
+  width: 1.45rem;
+  height: 1.45rem;
+  padding: 0;
+  border-color: var(--line-strong);
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.email-thread-delete-button:hover {
+  border-color: #a55d55;
+  background: #3c2321;
+  color: #f0bbb5;
+}
+
 .email-thread-content {
-  border-top: 1px solid #4a3c32;
+  border-top: 1px solid var(--line);
   padding: 0.75rem;
 }
 
@@ -570,7 +658,7 @@ textarea {
   display: grid;
   gap: 0.2rem;
   margin-top: 0.75rem;
-  border-top: 1px solid #3b3028;
+  border-top: 1px solid var(--line);
   padding-top: 0.75rem;
   color: inherit;
   text-decoration: none;
@@ -578,7 +666,7 @@ textarea {
 }
 
 .email-draft-card:hover {
-  background: #261f1a;
+  background: var(--surface-2);
   padding-right: 0.5rem;
   padding-left: 0.5rem;
 }
@@ -591,16 +679,272 @@ textarea {
 
 .email-draft-card-recipient,
 .email-draft-card-action {
-  color: #b9aa9a;
+  color: var(--muted);
   font-size: 0.78rem;
 }
 
 .email-draft-card-action {
-  color: #ddb07f;
+  color: var(--accent);
   margin-top: 0.2rem;
 }
 
 .compact-delete-button {
   padding: 0.25rem 0.55rem;
   font-size: 0.72rem;
+}
+
+.app-sidebar {
+  display: flex;
+  width: 15rem;
+  flex: 0 0 15rem;
+  flex-direction: column;
+  border-right: 1px solid var(--line);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface-1) 92%, var(--accent) 8%), var(--surface-1));
+  box-shadow: 12px 0 32px rgb(0 0 0 / 12%);
+  padding: 1.35rem;
+}
+
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
+}
+
+.brand-lockup strong,
+.brand-lockup span:last-child {
+  display: block;
+}
+
+.brand-lockup strong {
+  font-size: 0.98rem;
+}
+
+.brand-lockup span:last-child {
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.brand-mark {
+  display: grid !important;
+  width: 2.15rem;
+  height: 2.15rem;
+  place-items: center;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.app-nav {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 1.25rem;
+}
+
+.app-nav a {
+  border-left: 2px solid transparent;
+  padding: 0.62rem 0.7rem;
+  color: var(--muted);
+  font-size: 0.93rem;
+  text-decoration: none;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.app-nav a:hover,
+.app-nav a:focus-visible {
+  border-color: var(--accent);
+  background: var(--surface-2);
+  color: var(--foreground);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  margin-top: auto;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+  color: var(--foreground);
+}
+
+.app-content {
+  min-width: 0;
+  flex: 1;
+  padding: clamp(1.25rem, 3vw, 3rem);
+}
+
+.email-drafts-page {
+  width: min(100%, 72rem);
+  margin-inline: auto;
+}
+
+.email-generator-panel {
+  width: 100%;
+  margin-inline: auto;
+}
+
+.section-kicker {
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.text-muted {
+  color: var(--muted);
+}
+
+.text-soft {
+  color: var(--soft);
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+.border-subtle {
+  border-color: var(--line);
+}
+
+.surface-card {
+  background: var(--surface-1);
+}
+
+.surface-panel {
+  background: var(--surface-2);
+}
+
+.home-card {
+  border: 1px solid var(--line);
+  background: var(--surface-1);
+  padding: 1rem;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.home-card:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 720px) {
+  body {
+    display: block;
+  }
+
+  .app-sidebar {
+    width: 100%;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 1rem;
+  }
+
+  .app-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .theme-toggle {
+    width: auto;
+    align-self: flex-start;
+    margin-top: 1rem;
+    padding: 0 0.8rem;
+  }
+
+  .app-content {
+    padding: 1.15rem;
+  }
+}
+
+:root[data-theme="light"] th,
+:root[data-theme="light"] .resizable-table-header .resizable-table-cell {
+  background: var(--surface-2);
+}
+
+:root[data-theme="light"] th,
+:root[data-theme="light"] td,
+:root[data-theme="light"] .resizable-table,
+:root[data-theme="light"] .resizable-table-cell {
+  border-color: var(--line);
+}
+
+:root[data-theme="light"] .resizable-table-data-row:hover,
+:root[data-theme="light"] .email-draft-card:hover {
+  background: var(--surface-2);
+}
+
+:root[data-theme="light"] input,
+:root[data-theme="light"] select,
+:root[data-theme="light"] textarea,
+:root[data-theme="light"] .venue-option,
+:root[data-theme="light"] .email-style-card {
+  border-color: var(--line);
+  background: var(--surface-1);
+  color: var(--foreground);
+}
+
+:root[data-theme="light"] button {
+  border-color: var(--line-strong);
+  background: var(--surface-2);
+  color: var(--foreground);
+}
+
+:root[data-theme="light"] button:hover {
+  background: var(--surface-3);
+}
+
+:root[data-theme="light"] .primary-button {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+:root[data-theme="light"] .danger-button {
+  border-color: #c1837a;
+  background: #f3ddd8;
+  color: #7c2923;
+}
+
+:root[data-theme="light"] .email-review-dialog,
+:root[data-theme="light"] .band-link-dialog,
+:root[data-theme="light"] .band-text-dialog,
+:root[data-theme="light"] .email-thread {
+  border-color: var(--line-strong);
+  background: var(--surface-1);
+  color: var(--foreground);
+}
+
+:root[data-theme="light"] .email-style-card.selected,
+:root[data-theme="light"] .venue-option.selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-1));
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+:root[data-theme="light"] .email-style-card-title,
+:root[data-theme="light"] .email-draft-card-subject {
+  color: var(--foreground);
+}
+
+:root[data-theme="light"] .email-style-card-description,
+:root[data-theme="light"] .email-draft-card-recipient,
+:root[data-theme="light"] .email-draft-card-action {
+  color: var(--muted);
 }

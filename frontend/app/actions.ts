@@ -690,3 +690,36 @@ export async function deleteEmailDraft(formData: FormData) {
   revalidatePath("/email-drafts");
   revalidatePath("/");
 }
+
+export async function deleteBookingDrafts(formData: FormData) {
+  const bookingId = Number(formData.get("booking_id"));
+  if (!Number.isInteger(bookingId) || bookingId <= 0) {
+    throw new Error("Ungültige Booking-ID.");
+  }
+
+  const draftsResponse = await fetch(`${process.env.API_URL}/email-drafts`, {
+    cache: "no-store",
+  });
+  if (!draftsResponse.ok) {
+    throw new Error("E-Mail-Entwürfe konnten nicht geladen werden.");
+  }
+
+  const drafts = (await draftsResponse.json()) as Array<{
+    id: number;
+    booking_id: number;
+  }>;
+  const bookingDrafts = drafts.filter((draft) => draft.booking_id === bookingId);
+  const deleteResponses = await Promise.all(
+    bookingDrafts.map((draft) =>
+      fetch(`${process.env.API_URL}/email-drafts/${draft.id}`, {
+        method: "DELETE",
+      }),
+    ),
+  );
+  if (deleteResponses.some((response) => !response.ok)) {
+    throw new Error("Die Entwürfe konnten nicht vollständig gelöscht werden.");
+  }
+
+  revalidatePath("/email-drafts");
+  revalidatePath("/");
+}

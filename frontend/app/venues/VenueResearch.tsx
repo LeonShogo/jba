@@ -31,7 +31,7 @@ export function VenueResearch() {
   );
 
   return (
-    <section className="my-6 rounded-lg border border-[#4a3c32] bg-[#1d1916] p-5">
+    <section className="my-6 border border-subtle surface-card p-5">
       <h2 className="mb-4 text-lg font-semibold">KI-Venue-Recherche</h2>
 
       <form action={formAction} className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -104,7 +104,7 @@ export function VenueResearch() {
 
           <ul className="grid gap-4 lg:grid-cols-2">
             {visibleCandidates.map((candidate) => (
-              <li className="space-y-2 rounded-lg border border-[#4a3c32] p-4" key={`${candidate.name}-${candidate.city}`}>
+              <li className="space-y-2 border border-subtle p-4" key={`${candidate.name}-${candidate.city}`}>
                 <strong>{candidate.name}</strong>
                 <p>
                   {candidate.venue_type} · {candidate.city}

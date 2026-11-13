@@ -240,7 +240,7 @@ export function DraftReviewDialog({
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs text-[#b9aa9a]">
+          <p className="text-xs text-muted">
             Entwurf {index + 1} von {drafts.length}
           </p>
           <h2 className="text-xl font-semibold">E-Mail prüfen</h2>

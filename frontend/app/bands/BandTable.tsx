@@ -428,7 +428,7 @@ export function BandTable({ bands, apiUrl }: BandTableProps) {
               >
                 <fieldset className="mt-4">
                   <legend className="text-sm font-semibold">Inhalte der EPK</legend>
-                  <p className="mt-1 text-xs text-[#b9aa9c]">
+                  <p className="mt-1 text-xs text-muted">
                     Wähle die Materialien, die unter deinem EPK-Link verfügbar sind.
                   </p>
                   <div className="mt-3 grid gap-2">

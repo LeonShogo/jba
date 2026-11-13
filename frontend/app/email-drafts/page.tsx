@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { deleteEmailDraft } from "../actions";
+import { deleteBookingDrafts, deleteEmailDraft } from "../actions";
 import { GenerateEmailDraftBatchForm } from "./GenerateEmailDraftBatchForm";
 import { DraftReviewDialog } from "./DraftReviewDialog";
 
@@ -96,24 +96,24 @@ export default async function EmailDraftsPage({
   }
 
   return (
-    <main>
+    <main className="email-drafts-page">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">E-Mail-Entwürfe</h1>
-          <p className="mt-1 text-sm text-[#b9aa9a]">
+          <p className="mt-1 text-sm text-muted">
             Entwürfe sind nach Band und Venue gruppiert. Eingehende Antworten
             werden erst nach der späteren Mailkonto-Anbindung sichtbar.
           </p>
         </div>
         {selectedBookingId && (
-          <Link className="text-sm text-[#ddb07f] underline" href="/email-drafts">
+          <Link className="text-sm text-accent underline" href="/email-drafts">
             Alle Entwürfe anzeigen
           </Link>
         )}
       </div>
 
       {selectedBookingId && (
-        <p className="mt-4 rounded border border-[#4a3c32] bg-[#211c18] p-3 text-sm">
+        <p className="mt-4 border border-subtle surface-panel p-3 text-sm">
           Angezeigt wird {bookingLabels.get(selectedBookingId)}. Die KI-Maske
           kann unabhängig davon neue Bookings für ausgewählte Venues anlegen.
         </p>
@@ -123,29 +123,29 @@ export default async function EmailDraftsPage({
         bands={bands}
         venues={venues}
       />
-      <p className="mt-6 text-sm text-[#b9aa9a]">
+      <p className="mt-6 text-sm text-muted">
         {visibleDrafts.length}{" "}
         {visibleDrafts.length === 1 ? "Entwurf" : "Entwürfe"}
       </p>
 
       <div className="mt-3 grid gap-3">
         {[...draftsByBooking].map(([bookingId, bookingDrafts]) => (
-          <details
-            className="email-thread"
-            key={bookingId}
-            open={selectedBookingId === bookingId}
-          >
-            <summary>
-              {bookingLabels.get(bookingId)} · {bookingDrafts.length}{" "}
-              {bookingDrafts.length === 1 ? "Entwurf" : "Entwürfe"}
-            </summary>
-            <div className="email-thread-content">
-              <Link
-                className="text-xs text-[#ddb07f] underline"
-                href={`/bookings#booking-${bookingId}`}
-              >
-                Zugehöriges Booking öffnen
-              </Link>
+          <div className="email-thread-row" key={bookingId}>
+            <details
+              className="email-thread"
+              open={selectedBookingId === bookingId}
+            >
+              <summary>
+                {bookingLabels.get(bookingId)} · {bookingDrafts.length}{" "}
+                {bookingDrafts.length === 1 ? "Entwurf" : "Entwürfe"}
+              </summary>
+              <div className="email-thread-content">
+                <Link
+                  className="text-xs text-accent underline"
+                  href={`/bookings#booking-${bookingId}`}
+                >
+                  Zugehöriges Booking öffnen
+                </Link>
               {bookingDrafts.map((draft) => (
                 <section className="email-draft-entry" key={draft.id}>
                   <Link
@@ -157,7 +157,7 @@ export default async function EmailDraftsPage({
                   >
                     <div className="mb-2 flex items-center justify-between gap-3 text-xs">
                       <strong>Entwurf Nr. {draftNumbers.get(draft.id)}</strong>
-                      <span className="text-[#b9aa9a]">
+                      <span className="text-muted">
                         {draft.status === "approved"
                           ? "Freigegeben"
                           : "Entwurf"}
@@ -175,8 +175,22 @@ export default async function EmailDraftsPage({
                   </form>
                 </section>
               ))}
+              </div>
+            </details>
+            <div className="email-thread-summary-actions">
+              <form action={deleteBookingDrafts}>
+                <input type="hidden" name="booking_id" value={bookingId} />
+                <button
+                  type="submit"
+                  className="email-thread-delete-button"
+                  aria-label="Alle Entwürfe dieses Clubs löschen"
+                  title="Alle Entwürfe dieses Clubs löschen"
+                >
+                  ×
+                </button>
+              </form>
             </div>
-          </details>
+          </div>
         ))}
       </div>
       <DraftReviewDialog
