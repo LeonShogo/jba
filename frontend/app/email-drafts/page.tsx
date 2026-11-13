@@ -1,7 +1,11 @@
 import Link from "next/link";
-import { deleteBookingDrafts, deleteEmailDraft } from "../actions";
+import {
+  deleteBookingDrafts,
+  deleteEmailDraft,
+} from "../actions";
 import { GenerateEmailDraftBatchForm } from "./GenerateEmailDraftBatchForm";
 import { DraftReviewDialog } from "./DraftReviewDialog";
+import { ManualEmailDraftForm } from "./ManualEmailDraftForm";
 
 type EmailDraft = {
   id: number;
@@ -10,7 +14,7 @@ type EmailDraft = {
   recipient_email: string;
   subject: string;
   body: string;
-  status: "draft" | "approved";
+  status: "draft" | "approved" | "sent";
 };
 
 type Booking = {
@@ -22,6 +26,7 @@ type Booking = {
 type NamedRecord = {
   id: number;
   name: string;
+  email?: string | null;
   country?: string | null;
   state?: string | null;
   city?: string | null;
@@ -34,10 +39,8 @@ type EmailDraftsPageProps = {
 export default async function EmailDraftsPage({
   searchParams,
 }: EmailDraftsPageProps) {
-  const {
-    booking_id: bookingIdParameter,
-    review: reviewParameter,
-  } = await searchParams;
+  const { booking_id: bookingIdParameter, review: reviewParameter } =
+    await searchParams;
   const requestedBookingId = Number(bookingIdParameter);
   const reviewDraftId = Number(reviewParameter);
 
@@ -119,10 +122,8 @@ export default async function EmailDraftsPage({
         </p>
       )}
 
-      <GenerateEmailDraftBatchForm
-        bands={bands}
-        venues={venues}
-      />
+      <GenerateEmailDraftBatchForm bands={bands} venues={venues} />
+      <ManualEmailDraftForm bands={bands} venues={venues} />
       <p className="mt-6 text-sm text-muted">
         {visibleDrafts.length}{" "}
         {visibleDrafts.length === 1 ? "Entwurf" : "Entwürfe"}
@@ -146,35 +147,50 @@ export default async function EmailDraftsPage({
                 >
                   Zugehöriges Booking öffnen
                 </Link>
-              {bookingDrafts.map((draft) => (
-                <section className="email-draft-entry" key={draft.id}>
-                  <Link
-                    id={`draft-${draft.id}`}
-                    className="email-draft-card"
-                    href={selectedBookingId
-                      ? `/email-drafts?booking_id=${selectedBookingId}&review=${draft.id}`
-                      : `/email-drafts?review=${draft.id}`}
-                  >
-                    <div className="mb-2 flex items-center justify-between gap-3 text-xs">
-                      <strong>Entwurf Nr. {draftNumbers.get(draft.id)}</strong>
-                      <span className="text-muted">
-                        {draft.status === "approved"
-                          ? "Freigegeben"
-                          : "Entwurf"}
+                {bookingDrafts.map((draft) => (
+                  <section className="email-draft-entry" key={draft.id}>
+                    <Link
+                      id={`draft-${draft.id}`}
+                      className="email-draft-card"
+                      href={
+                        selectedBookingId
+                          ? `/email-drafts?booking_id=${selectedBookingId}&review=${draft.id}`
+                          : `/email-drafts?review=${draft.id}`
+                      }
+                    >
+                      <div className="mb-2 flex items-center justify-between gap-3 text-xs">
+                        <strong>
+                          Entwurf Nr. {draftNumbers.get(draft.id)}
+                        </strong>
+                        <span className="text-muted">
+                          {draft.status === "approved"
+                            ? "Freigegeben"
+                            : draft.status === "sent"
+                              ? "Gesendet"
+                              : "Entwurf"}
+                        </span>
+                      </div>
+                      <strong className="email-draft-card-subject">
+                        {draft.subject || "Ohne Betreff"}
+                      </strong>
+                      <span className="email-draft-card-recipient">
+                        {draft.recipient_email}
                       </span>
-                    </div>
-                    <strong className="email-draft-card-subject">{draft.subject || "Ohne Betreff"}</strong>
-                    <span className="email-draft-card-recipient">{draft.recipient_email}</span>
-                    <span className="email-draft-card-action">Öffnen und prüfen →</span>
-                  </Link>
-                  <form action={deleteEmailDraft} className="mt-2">
-                    <input type="hidden" name="id" value={draft.id} />
-                    <button type="submit" className="danger-button compact-delete-button">
-                      Direkt löschen
-                    </button>
-                  </form>
-                </section>
-              ))}
+                      <span className="email-draft-card-action">
+                        Öffnen und prüfen →
+                      </span>
+                    </Link>
+                    <form action={deleteEmailDraft} className="mt-2">
+                      <input type="hidden" name="id" value={draft.id} />
+                      <button
+                        type="submit"
+                        className="danger-button compact-delete-button"
+                      >
+                        Direkt löschen
+                      </button>
+                    </form>
+                  </section>
+                ))}
               </div>
             </details>
             <div className="email-thread-summary-actions">
@@ -189,6 +205,18 @@ export default async function EmailDraftsPage({
                   ×
                 </button>
               </form>
+              {bookingDrafts.some((draft) => draft.status === "sent") && (
+                <span
+                  className="email-thread-sent-indicator"
+                  title="Mindestens ein Entwurf wurde versendet"
+                  aria-label="Mindestens ein Entwurf wurde versendet"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m3 11 18-8-8 18-2-8-8-2Z" />
+                    <path d="m11 13 5-5" />
+                  </svg>
+                </span>
+              )}
             </div>
           </div>
         ))}

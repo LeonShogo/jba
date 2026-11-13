@@ -9,11 +9,12 @@ from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from database import get_db
-from enums import EmailDraftStatus
+from enums import BookingStatus, EmailDraftStatus
 from models import BandModel, VenueModel, BookingModel, EmailDraftModel
 from schemas import VenueResearchRequest, Band, BandCreate, BandUpdate, Venue, VenueCreate, VenueUpdate, Booking, BookingCreate, BookingUpdate, EmailDraft,EmailDraftCreate, EmailDraftUpdate
 from agents.venue_research import venue_research_graph
 from agents.email_draft import generate_email_draft
+from email_service import send_email
 
 app = FastAPI()
 upload_directory = Path(__file__).resolve().parent / "uploads"
@@ -124,6 +125,7 @@ def generate_booking_email(data: EmailDraftGenerateRequest,
     db.commit()
     db.refresh(draft)
     return draft
+
 @app.post("/email-drafts/generate-batch", response_model=list[EmailDraft], status_code=201)
 def generate_booking_mail_batch(
     data: EmailDraftBatchGenerateRequest,
@@ -525,3 +527,34 @@ def delete_email_draft(
 
     db.delete(draft)
     db.commit()
+
+@app.post("/email-drafts/{draft_id}/send", response_model=EmailDraft)
+def send_email_draft(
+    draft_id: int,
+    db: Session = Depends(get_db),
+) -> EmailDraftModel:
+    draft = db.get(EmailDraftModel, draft_id)
+
+    if draft is None:
+        raise HTTPException(status_code=404, detail="Email draft not found")
+
+    if draft.status != EmailDraftStatus.APPROVED.value:
+        raise HTTPException(
+            status_code=409,
+            detail="Nur freigegebene Entwürfe dürfen versendet werden.",
+        )
+
+    send_email(
+        recipient=draft.recipient_email,
+        subject=draft.subject,
+        body=draft.body,
+    )
+
+    booking = db.get(BookingModel, draft.booking_id)
+    if booking is not None:
+        booking.status = BookingStatus.SENT.value
+    draft.status = EmailDraftStatus.SENT.value
+    db.commit()
+    db.refresh(draft)
+
+    return draft

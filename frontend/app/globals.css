@@ -143,6 +143,10 @@ th {
   text-overflow: ellipsis;
 }
 
+.resizable-table-cell select {
+  background: var(--surface-1);
+}
+
 .resizable-table-cell textarea {
   resize: none;
 }
@@ -308,6 +312,7 @@ th {
 .email-review-dialog {
   width: min(58rem, 92vw);
   max-height: 90vh;
+  margin: auto;
   overflow: auto;
   border: 1px solid var(--line-strong);
   border-radius: 6px;
@@ -451,6 +456,12 @@ textarea {
   border-radius: 4px;
   color: var(--foreground);
   padding: 0.4rem 0.65rem;
+}
+
+select option,
+select optgroup {
+  background: var(--surface-1);
+  color: var(--foreground);
 }
 
 .email-style-board {
@@ -606,6 +617,20 @@ textarea {
   font-size: 0.75rem;
 }
 
+.manual-email-form {
+  margin-top: 1rem;
+  border: 1px solid var(--line);
+  background: var(--surface-1);
+  padding: 0.8rem 1rem 1rem;
+}
+
+.manual-email-form summary {
+  cursor: pointer;
+  color: var(--soft);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
 .email-thread {
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -630,7 +655,29 @@ textarea {
   top: 0.4rem;
   right: 0.55rem;
   display: flex;
+  align-items: center;
   gap: 0.25rem;
+}
+
+.email-thread-sent-indicator {
+  display: inline-flex;
+  width: 1.45rem;
+  height: 1.45rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  color: #48b879;
+}
+
+.email-thread-sent-indicator svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
 }
 
 .email-thread-delete-button {

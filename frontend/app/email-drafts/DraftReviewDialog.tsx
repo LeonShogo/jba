@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   deleteEmailDraft,
   regenerateEmailDraft,
+  sendEmailDraft,
   updateEmailDraft,
 } from "../actions";
 
@@ -15,7 +16,7 @@ type ReviewDraft = {
   recipient_email: string;
   subject: string;
   body: string;
-  status: "draft" | "approved";
+  status: "draft" | "approved" | "sent";
 };
 
 function inferTourPeriod(draft: ReviewDraft | undefined): string {
@@ -170,6 +171,35 @@ export function DraftReviewDialog({
     });
   }
 
+  function sendCurrentDraft() {
+    if (!currentDraft || currentDraft.status !== "approved") return;
+
+    const updateData = new FormData();
+    updateData.set("id", String(currentDraft.id));
+    updateData.set("recipient_email", recipientEmail);
+    updateData.set("subject", subject);
+    updateData.set("body", body);
+    updateData.set("status", "approved");
+
+    const sendData = new FormData();
+    sendData.set("id", String(currentDraft.id));
+    setError(null);
+    startTransition(() => {
+      void updateEmailDraft(updateData)
+        .then(() => sendEmailDraft(sendData))
+        .then(() => {
+          setDrafts((current) =>
+            current.map((draft) =>
+              draft.id === currentDraft.id ? { ...draft, status: "sent" } : draft,
+            ),
+          );
+          router.refresh();
+          closeDialog();
+        })
+        .catch(() => setError("Die E-Mail konnte nicht versendet werden."));
+    });
+  }
+
   function removeDraft() {
     if (!currentDraft) return;
     const formData = new FormData();
@@ -315,6 +345,11 @@ export function DraftReviewDialog({
           <button type="button" className="primary-button" onClick={() => saveDraft("approved")} disabled={isPending}>
             Für später freigeben
           </button>
+          {currentDraft.status === "approved" && (
+            <button type="button" className="primary-button" onClick={sendCurrentDraft} disabled={isPending}>
+              Jetzt senden
+            </button>
+          )}
         </div>
       </div>
     </dialog>

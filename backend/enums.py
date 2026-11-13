@@ -12,10 +12,6 @@ class BookingStatus(str, Enum):
     FOLLOW_UP = "follow_up"
     ACCEPTED = "accepted"
     REJECTED = "rejected"
-
-class EmailDraftStatus(str, Enum):
-    DRAFT = "draft"
-    APPROVED = "approved"
     
 class EpkContent(str, Enum):
     PHOTOS = "photos"
@@ -44,5 +40,11 @@ class EmailStyleAttribute(str, Enum):
     GROUNDED = "grounded"
     ELEGANT = "elegant"
     CURIOUS = "curious"
+    
+class EmailDraftStatus(str, Enum):
+    DRAFT = "draft"
+    APPROVED = "approved"
+    SENT = "sent"
+
 
     
