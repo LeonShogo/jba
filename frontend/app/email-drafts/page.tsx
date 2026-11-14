@@ -162,7 +162,7 @@ export default async function EmailDraftsPage({
                         <strong>
                           Entwurf Nr. {draftNumbers.get(draft.id)}
                         </strong>
-                        <span className="text-muted">
+                        <span className={`text-muted email-draft-status email-draft-status-${draft.status}`}>
                           {draft.status === "approved"
                             ? "Freigegeben"
                             : draft.status === "sent"

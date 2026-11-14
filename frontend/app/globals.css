@@ -17,18 +17,18 @@
 }
 
 :root[data-theme="light"] {
-  --background: #e3eaed;
-  --foreground: #1d2831;
-  --surface-1: #f0f4f5;
-  --surface-2: #e1eaee;
-  --surface-3: #d4e0e5;
-  --line: #c0d0d8;
-  --line-strong: #97adb9;
-  --muted: #667883;
-  --soft: #465a66;
-  --accent: #3f7692;
-  --accent-strong: #2f617b;
-  --success: #377448;
+  --background: #e9e4da;
+  --foreground: #2d3436;
+  --surface-1: #f4f0e8;
+  --surface-2: #ebe5da;
+  --surface-3: #ddd5c8;
+  --line: #cfc5b7;
+  --line-strong: #ac9f90;
+  --muted: #73756f;
+  --soft: #555c5a;
+  --accent: #4d7b8f;
+  --accent-strong: #37677c;
+  --success: #34764b;
   color-scheme: light;
 }
 
@@ -97,7 +97,27 @@ th {
   overflow: hidden;
   border-top: 1px solid var(--line);
   border-left: 1px solid var(--line);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
+}
+
+.booking-table-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  font-size: 0.75rem;
+}
+
+.booking-table-toolbar label {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.booking-table-toolbar select,
+.booking-table-toolbar button {
+  height: 2rem;
+  font-size: 0.75rem;
 }
 
 .resizable-table-row {
@@ -124,8 +144,19 @@ th {
   line-height: 1.1;
 }
 
+.bands-table .resizable-table-header .resizable-table-cell {
+  overflow: hidden;
+  overflow-wrap: normal;
+  word-break: normal;
+  white-space: normal;
+}
+
 .resizable-table-data-row:hover {
   background: var(--surface-2);
+}
+
+.resizable-table-data-row {
+  background: var(--surface-1);
 }
 
 .resizable-table-cell input,
@@ -145,6 +176,28 @@ th {
 
 .resizable-table-cell select {
   background: var(--surface-1);
+}
+
+.booking-status-select {
+  font-weight: 600;
+}
+
+.booking-status-sent {
+  border-color: #c59a43 !important;
+  background: color-mix(in srgb, #d7a83f 20%, var(--surface-1)) !important;
+  color: #e6c56d !important;
+}
+
+.booking-status-accepted {
+  border-color: #4eaa70 !important;
+  background: color-mix(in srgb, #42a966 20%, var(--surface-1)) !important;
+  color: #8bdaa5 !important;
+}
+
+.booking-status-rejected {
+  border-color: #b35c58 !important;
+  background: color-mix(in srgb, #b74c4c 20%, var(--surface-1)) !important;
+  color: #efaaa5 !important;
 }
 
 .resizable-table-cell textarea {
@@ -183,6 +236,12 @@ th {
   color: var(--accent-strong);
 }
 
+.booking-draft-link {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .band-link-status {
   width: 100%;
   height: 100%;
@@ -208,6 +267,9 @@ th {
 
 .band-link-dialog {
   width: min(28rem, 90vw);
+  max-height: 90vh;
+  margin: auto;
+  overflow: auto;
   border: 1px solid var(--line-strong);
   border-radius: 6px;
   background: var(--surface-1);
@@ -288,6 +350,9 @@ th {
 
 .band-text-dialog {
   width: min(48rem, 90vw);
+  max-height: 90vh;
+  margin: auto;
+  overflow: auto;
   border: 1px solid var(--line-strong);
   border-radius: 6px;
   background: var(--surface-1);
@@ -307,6 +372,50 @@ th {
   border-radius: 4px;
   background: var(--surface-2);
   padding: 0.75rem;
+}
+
+.social-media-dialog {
+  width: min(42rem, 90vw);
+}
+
+.social-media-fields {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+}
+
+.social-media-fields label {
+  display: grid;
+  gap: 0.25rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.social-media-fields input {
+  width: 100%;
+}
+
+.social-media-other-list {
+  display: grid;
+  gap: 0.5rem;
+  border-top: 1px solid var(--line);
+  padding-top: 0.65rem;
+}
+
+.social-media-other-list > div:first-child button {
+  padding: 0.25rem 0.45rem;
+  font-size: 0.72rem;
+}
+
+.social-media-other-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.7fr) minmax(0, 1.5fr) auto;
+  gap: 0.4rem;
+}
+
+.social-media-other-row button {
+  min-width: 2rem;
+  padding-inline: 0.45rem;
 }
 
 .email-review-dialog {
@@ -331,6 +440,27 @@ th {
   border-radius: 4px;
   background: var(--surface-2);
   padding: 0.75rem;
+}
+
+.email-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.email-review-navigation {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.email-review-action-buttons {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 
 .email-review-regeneration {
@@ -472,7 +602,7 @@ select optgroup {
 
 .venue-picker {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.45rem;
   max-height: 15rem;
   overflow-y: auto;
@@ -498,14 +628,14 @@ select optgroup {
 .venue-option {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   min-width: 0;
   border: 1px solid var(--line);
   border-radius: 4px;
   background: var(--surface-2);
-  padding: 0.55rem 0.65rem;
+  padding: 0.45rem 0.5rem;
   cursor: pointer;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   transition: border-color 120ms ease, background 120ms ease;
 }
 
@@ -574,13 +704,13 @@ select optgroup {
 
 .email-style-card-title {
   color: var(--foreground);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 600;
 }
 
 .email-style-card-description {
   color: var(--muted);
-  font-size: 0.65rem;
+  font-size: 0.7rem;
 }
 
 @media (min-width: 768px) {
@@ -608,13 +738,13 @@ select optgroup {
 .compact-email-form button {
   height: 2rem;
   border-radius: 5px;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 
 .compact-email-form textarea {
   min-height: 5rem;
   border-radius: 5px;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 
 .manual-email-form {
@@ -627,7 +757,7 @@ select optgroup {
 .manual-email-form summary {
   cursor: pointer;
   color: var(--soft);
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
@@ -646,7 +776,7 @@ select optgroup {
   padding: 0.65rem 0.75rem;
   padding-right: 5.5rem;
   color: var(--soft);
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   font-weight: 600;
 }
 
@@ -727,12 +857,40 @@ select optgroup {
 .email-draft-card-recipient,
 .email-draft-card-action {
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.84rem;
 }
 
 .email-draft-card-action {
   color: var(--accent);
   margin-top: 0.2rem;
+}
+
+.email-draft-status.email-draft-status-sent {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.send-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-color: #4eaa70;
+  background: #27754a;
+  color: #e6f8eb;
+}
+
+.send-button:hover {
+  background: #338d5c;
+}
+
+.send-button svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
 }
 
 .compact-delete-button {
@@ -840,6 +998,14 @@ select optgroup {
 .email-drafts-page {
   width: min(100%, 72rem);
   margin-inline: auto;
+}
+
+.email-drafts-page .text-xs {
+  font-size: 0.8rem;
+}
+
+.email-drafts-page .text-sm {
+  font-size: 0.95rem;
 }
 
 .email-generator-panel {
@@ -983,6 +1149,27 @@ select optgroup {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 10%, var(--surface-1));
   box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+:root[data-theme="light"] .booking-status-sent {
+  background: #f8edc8 !important;
+  color: #80610e !important;
+}
+
+:root[data-theme="light"] .booking-status-accepted {
+  background: #dff1e4 !important;
+  color: #216438 !important;
+}
+
+:root[data-theme="light"] .booking-status-rejected {
+  background: #f5dddd !important;
+  color: #8a2929 !important;
+}
+
+:root[data-theme="light"] .send-button {
+  border-color: #4eaa70;
+  background: #27754a !important;
+  color: #e6f8eb;
 }
 
 :root[data-theme="light"] .email-style-card-title,

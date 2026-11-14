@@ -7,6 +7,7 @@ type Booking = {
   venue_id: number;
   status: string;
   notes: string | null;
+  first_sent_at: string | null;
 };
 
 type Band = {
@@ -69,6 +70,7 @@ export default async function BookingPage() {
     venueName: venueNames.get(booking.venue_id) ?? "Unbekanntes Venue",
     status: sentBookingIds.has(booking.id) ? "sent" : booking.status,
     notes: booking.notes,
+    firstSentAt: booking.first_sent_at,
     draftCount: draftCounts.get(booking.id) ?? 0,
   }));
 

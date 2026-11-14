@@ -1,5 +1,6 @@
 from pathlib import Path
 import shutil
+from datetime import datetime, timezone
 
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.staticfiles import StaticFiles
@@ -29,6 +30,22 @@ band_document_fields = {
     "band-text": "band_text_pdf_url",
 }
 maximum_pdf_size = 10 * 1024 * 1024
+
+
+def format_social_media(social_media: dict | None) -> str:
+    if not social_media:
+        return "Nicht angegeben"
+
+    links = []
+    for key, label in (("instagram", "Instagram"), ("tiktok", "TikTok"), ("facebook", "Facebook")):
+        url = social_media.get(key)
+        if isinstance(url, str) and url.strip():
+            links.append(f"{label}: {url.strip()}")
+    for item in social_media.get("other", []):
+        if isinstance(item, dict) and isinstance(item.get("url"), str) and item["url"].strip():
+            label = item.get("label") or "Weitere Plattform"
+            links.append(f"{label}: {item['url'].strip()}")
+    return ", ".join(links) or "Nicht angegeben"
 
 
 @app.get("/health")
@@ -85,6 +102,7 @@ def generate_booking_email(data: EmailDraftGenerateRequest,
                   f"Telefon der Band: {band.phone or 'Nicht angegeben'}\n"
                   f"E-Mail der Band: {band.email or 'Nicht angegeben'}\n"
                   )
+    band_info += f"Social Media: {format_social_media(band.social_media)}\n"
     
     
     
@@ -194,6 +212,7 @@ def generate_booking_mail_batch(
             f"Besetzung: {band.lineup or 'Nicht angegeben.'}\n"
             f"Beschreibung: {band.description or 'Nicht angegeben.'}\n"
             f"EPK-Link: {band.epk_url or 'Nicht angegeben.'}\n"
+            f"Social Media: {format_social_media(band.social_media)}\n"
         )
 
         venue_info = (
@@ -553,6 +572,8 @@ def send_email_draft(
     booking = db.get(BookingModel, draft.booking_id)
     if booking is not None:
         booking.status = BookingStatus.SENT.value
+        if booking.first_sent_at is None:
+            booking.first_sent_at = datetime.now(timezone.utc)
     draft.status = EmailDraftStatus.SENT.value
     db.commit()
     db.refresh(draft)

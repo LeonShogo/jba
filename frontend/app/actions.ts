@@ -528,6 +528,7 @@ export async function updateBand(formData: FormData) {
   const id = Number(formData.get("id"));
   const name = formData.get("name");
   const epkContents = formData.getAll("epk_contents");
+  const socialMediaValue = formData.get("social_media");
   const optionalFields = [
     "genre",
     "lineup",
@@ -544,6 +545,18 @@ export async function updateBand(formData: FormData) {
     throw new Error("Ungültige Banddaten.");
   }
 
+  let socialMedia: Record<string, unknown> = {};
+  if (typeof socialMediaValue === "string" && socialMediaValue.trim()) {
+    try {
+      const parsed = JSON.parse(socialMediaValue);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        socialMedia = parsed as Record<string, unknown>;
+      }
+    } catch {
+      throw new Error("Ungültige Social-Media-Daten.");
+    }
+  }
+
   const details = Object.fromEntries(
     optionalFields.map((field) => {
       const value = formData.get(field);
@@ -557,7 +570,12 @@ export async function updateBand(formData: FormData) {
   const response = await fetch(`${process.env.API_URL}/bands/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, ...details, epk_contents: epkContents }),
+    body: JSON.stringify({
+      name,
+      ...details,
+      epk_contents: epkContents,
+      social_media: socialMedia,
+    }),
   });
 
   if (!response.ok) {

@@ -67,6 +67,7 @@ def generate_email_draft(band_info: str, venue_info: str,
         "Nenne im Mailtext selbst keinen Tourzeitraum, keine Jahreszeit und keinen anderen Termin. "
         "Der exakt eingegebene Tourzeitraum wird anschließend von der Anwendung eingesetzt. "
         "Wenn ein EPK-Link angegeben ist, füge ihn als weiterführenden Link ein. "
+        "Berücksichtige angegebene Social-Media-Links nur, wenn sie für die Anfrage sinnvoll sind. "
         "Behaupte keine bestimmten Inhalte der EPK, die nicht ausdrücklich belegt sind. "
         "Schließe mit den angegebenen Bandkontaktdaten ab; lasse fehlende Angaben weg. "
         "Wenn ein EPK-Link und bestätigte EPK-Inhalte angegeben sind, "
