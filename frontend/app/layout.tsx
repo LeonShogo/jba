@@ -42,6 +42,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Link href="/venues">Clubs & Festivals</Link>
             <Link href="/bookings">Bookings</Link>
             <Link href="/email-drafts">E-Mail-Entwürfe</Link>
+            <Link href="/emails">E-Mails</Link>
           </nav>
           <ThemeToggle />
         </aside>

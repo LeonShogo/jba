@@ -104,6 +104,7 @@ export async function generateEmailDraft(
     };
   }
   revalidatePath("/email-drafts");
+  revalidatePath("/emails");
   revalidatePath("/bookings");
   revalidatePath("/");
   return { error: null, draftId: result.id, bookingId, draft: result };
@@ -741,6 +742,7 @@ export async function createManualEmailDraft(formData: FormData) {
   }
 
   revalidatePath("/email-drafts");
+  revalidatePath("/emails");
   revalidatePath("/bookings");
 }
 
