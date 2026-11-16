@@ -1,5 +1,6 @@
 from pathlib import Path
 import shutil
+from datetime import datetime, timezone
 
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.staticfiles import StaticFiles
@@ -9,11 +10,12 @@ from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from database import get_db
-from enums import EmailDraftStatus
+from enums import BookingStatus, EmailDraftStatus
 from models import BandModel, VenueModel, BookingModel, EmailDraftModel
 from schemas import VenueResearchRequest, Band, BandCreate, BandUpdate, Venue, VenueCreate, VenueUpdate, Booking, BookingCreate, BookingUpdate, EmailDraft,EmailDraftCreate, EmailDraftUpdate
 from agents.venue_research import venue_research_graph
 from agents.email_draft import generate_email_draft
+from email_service import send_email
 
 app = FastAPI()
 upload_directory = Path(__file__).resolve().parent / "uploads"
@@ -28,6 +30,22 @@ band_document_fields = {
     "band-text": "band_text_pdf_url",
 }
 maximum_pdf_size = 10 * 1024 * 1024
+
+
+def format_social_media(social_media: dict | None) -> str:
+    if not social_media:
+        return "Nicht angegeben"
+
+    links = []
+    for key, label in (("instagram", "Instagram"), ("tiktok", "TikTok"), ("facebook", "Facebook")):
+        url = social_media.get(key)
+        if isinstance(url, str) and url.strip():
+            links.append(f"{label}: {url.strip()}")
+    for item in social_media.get("other", []):
+        if isinstance(item, dict) and isinstance(item.get("url"), str) and item["url"].strip():
+            label = item.get("label") or "Weitere Plattform"
+            links.append(f"{label}: {item['url'].strip()}")
+    return ", ".join(links) or "Nicht angegeben"
 
 
 @app.get("/health")
@@ -84,6 +102,7 @@ def generate_booking_email(data: EmailDraftGenerateRequest,
                   f"Telefon der Band: {band.phone or 'Nicht angegeben'}\n"
                   f"E-Mail der Band: {band.email or 'Nicht angegeben'}\n"
                   )
+    band_info += f"Social Media: {format_social_media(band.social_media)}\n"
     
     
     
@@ -124,6 +143,7 @@ def generate_booking_email(data: EmailDraftGenerateRequest,
     db.commit()
     db.refresh(draft)
     return draft
+
 @app.post("/email-drafts/generate-batch", response_model=list[EmailDraft], status_code=201)
 def generate_booking_mail_batch(
     data: EmailDraftBatchGenerateRequest,
@@ -192,6 +212,7 @@ def generate_booking_mail_batch(
             f"Besetzung: {band.lineup or 'Nicht angegeben.'}\n"
             f"Beschreibung: {band.description or 'Nicht angegeben.'}\n"
             f"EPK-Link: {band.epk_url or 'Nicht angegeben.'}\n"
+            f"Social Media: {format_social_media(band.social_media)}\n"
         )
 
         venue_info = (
@@ -525,3 +546,36 @@ def delete_email_draft(
 
     db.delete(draft)
     db.commit()
+
+@app.post("/email-drafts/{draft_id}/send", response_model=EmailDraft)
+def send_email_draft(
+    draft_id: int,
+    db: Session = Depends(get_db),
+) -> EmailDraftModel:
+    draft = db.get(EmailDraftModel, draft_id)
+
+    if draft is None:
+        raise HTTPException(status_code=404, detail="Email draft not found")
+
+    if draft.status != EmailDraftStatus.APPROVED.value:
+        raise HTTPException(
+            status_code=409,
+            detail="Nur freigegebene Entwürfe dürfen versendet werden.",
+        )
+
+    send_email(
+        recipient=draft.recipient_email,
+        subject=draft.subject,
+        body=draft.body,
+    )
+
+    booking = db.get(BookingModel, draft.booking_id)
+    if booking is not None:
+        booking.status = BookingStatus.SENT.value
+        if booking.first_sent_at is None:
+            booking.first_sent_at = datetime.now(timezone.utc)
+    draft.status = EmailDraftStatus.SENT.value
+    db.commit()
+    db.refresh(draft)
+
+    return draft

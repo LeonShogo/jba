@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { deleteBooking, updateBooking } from "../actions";
 import { AutoGrowTextarea } from "../AutoGrowTextarea";
 import { useResizableTable } from "../useResizableTable";
@@ -11,11 +12,30 @@ export type BookingRow = {
   venueName: string;
   status: string;
   notes: string | null;
+  firstSentAt: string | null;
   draftCount: number;
 };
 
-const initialColumnWidths = [17, 20, 15, 20, 14, 14];
-const minimumColumnWidths = [9, 9, 8, 12, 8, 10];
+const initialColumnWidths = [16, 18, 14, 13, 17, 11, 11];
+const minimumColumnWidths = [8, 8, 8, 8, 10, 8, 9];
+type SortKey = "status" | "date" | "name";
+
+const statusLabels: Record<string, string> = {
+  draft: "Entwurf",
+  sent: "Gesendet",
+  replied: "Antwort erhalten",
+  follow_up: "Nachfassen",
+  accepted: "Zugesagt",
+  rejected: "Abgelehnt",
+};
+
+function formatSentDate(value: string | null) {
+  if (!value) return "–";
+  return new Intl.DateTimeFormat("de-DE", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
 
 type BookingTableProps = {
   bookings: BookingRow[];
@@ -28,17 +48,77 @@ export function BookingTable({ bookings }: BookingTableProps) {
     startColumnResize,
     startRowResize,
   } = useResizableTable({
-    storageKey: "jba:bookings-table-layout",
+    storageKey: "jba:bookings-table-layout-compact-3",
     initialColumnWidths,
     minimumColumnWidths,
-    initialRowHeight: 38,
-    minimumRowHeight: 32,
+    initialRowHeight: 32,
+    minimumRowHeight: 28,
+  });
+  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [statusValues, setStatusValues] = useState<Record<number, string>>(
+    () => Object.fromEntries(bookings.map((booking) => [booking.id, booking.status])),
+  );
+
+  const sortedBookings = [...bookings].sort((a, b) => {
+    let comparison = 0;
+    if (sortKey === "status") {
+      comparison = (statusLabels[a.status] ?? a.status).localeCompare(
+        statusLabels[b.status] ?? b.status,
+        "de",
+      );
+    } else if (sortKey === "date") {
+      if (!a.firstSentAt && b.firstSentAt) comparison = 1;
+      else if (a.firstSentAt && !b.firstSentAt) comparison = -1;
+      else {
+        comparison =
+          (Date.parse(a.firstSentAt ?? "") || 0) -
+          (Date.parse(b.firstSentAt ?? "") || 0);
+      }
+    } else {
+      comparison = `${a.bandName} ${a.venueName}`.localeCompare(
+        `${b.bandName} ${b.venueName}`,
+        "de",
+        { sensitivity: "base" },
+      );
+    }
+    return sortDirection === "asc" ? comparison : -comparison;
   });
 
-  const headers = ["Band", "Venue", "Status", "Notiz", "E-Mail", "Aktionen"];
+  const headers = [
+    "Band",
+    "Venue",
+    "Status",
+    "Erster Versand",
+    "Notiz",
+    "E-Mail",
+    "Aktionen",
+  ];
 
   return (
-    <div className="resizable-table" role="table">
+    <>
+      <div className="booking-table-toolbar">
+        <label>
+          Sortieren nach
+          <select
+            value={sortKey}
+            onChange={(event) => setSortKey(event.target.value as SortKey)}
+          >
+            <option value="name">Alphabetisch</option>
+            <option value="status">Status</option>
+            <option value="date">Erster Versand</option>
+          </select>
+        </label>
+        <button
+          type="button"
+          onClick={() =>
+            setSortDirection((current) => (current === "asc" ? "desc" : "asc"))
+          }
+        >
+          {sortDirection === "asc" ? "Aufsteigend ↑" : "Absteigend ↓"}
+        </button>
+      </div>
+      <div className="resizable-table booking-table" role="table">
       <div
         className="resizable-table-row resizable-table-header"
         role="row"
@@ -63,7 +143,7 @@ export function BookingTable({ bookings }: BookingTableProps) {
       </div>
 
       <div role="rowgroup">
-        {bookings.map((booking) => {
+        {sortedBookings.map((booking) => {
           const formId = `update-booking-${booking.id}`;
           const draftReference =
             booking.draftCount === 0
@@ -80,7 +160,7 @@ export function BookingTable({ bookings }: BookingTableProps) {
               key={booking.id}
               style={{
                 gridTemplateColumns,
-                minHeight: rowHeights[booking.id] ?? 38,
+                minHeight: rowHeights[booking.id] ?? 32,
               }}
               suppressHydrationWarning
             >
@@ -94,9 +174,16 @@ export function BookingTable({ bookings }: BookingTableProps) {
               </div>
               <div className="resizable-table-cell" role="cell">
                 <select
+                  className={`booking-status-select booking-status-${(statusValues[booking.id] ?? booking.status).replace("_", "-")}`}
                   form={formId}
                   name="status"
-                  defaultValue={booking.status}
+                  value={statusValues[booking.id] ?? booking.status}
+                  onChange={(event) =>
+                    setStatusValues((current) => ({
+                      ...current,
+                      [booking.id]: event.target.value,
+                    }))
+                  }
                 >
                   <option value="draft">Entwurf</option>
                   <option value="sent">Gesendet</option>
@@ -107,6 +194,11 @@ export function BookingTable({ bookings }: BookingTableProps) {
                 </select>
               </div>
               <div className="resizable-table-cell" role="cell">
+                <span className="resizable-table-text">
+                  {formatSentDate(booking.firstSentAt)}
+                </span>
+              </div>
+              <div className="resizable-table-cell" role="cell">
                 <AutoGrowTextarea
                   form={formId}
                   name="notes"
@@ -115,7 +207,7 @@ export function BookingTable({ bookings }: BookingTableProps) {
               </div>
               <div className="resizable-table-cell" role="cell">
                 <Link
-                  className="resizable-table-link"
+                  className="resizable-table-link booking-draft-link"
                   href={`/email-drafts?booking_id=${booking.id}`}
                   title={draftReference}
                 >
@@ -155,6 +247,7 @@ export function BookingTable({ bookings }: BookingTableProps) {
           );
         })}
       </div>
-    </div>
+      </div>
+    </>
   );
 }

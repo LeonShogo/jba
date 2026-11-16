@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   deleteEmailDraft,
   regenerateEmailDraft,
+  sendEmailDraft,
   updateEmailDraft,
 } from "../actions";
 
@@ -15,7 +16,7 @@ type ReviewDraft = {
   recipient_email: string;
   subject: string;
   body: string;
-  status: "draft" | "approved";
+  status: "draft" | "approved" | "sent";
 };
 
 function inferTourPeriod(draft: ReviewDraft | undefined): string {
@@ -170,6 +171,35 @@ export function DraftReviewDialog({
     });
   }
 
+  function sendCurrentDraft() {
+    if (!currentDraft || currentDraft.status === "sent") return;
+
+    const updateData = new FormData();
+    updateData.set("id", String(currentDraft.id));
+    updateData.set("recipient_email", recipientEmail);
+    updateData.set("subject", subject);
+    updateData.set("body", body);
+    updateData.set("status", "approved");
+
+    const sendData = new FormData();
+    sendData.set("id", String(currentDraft.id));
+    setError(null);
+    startTransition(() => {
+      void updateEmailDraft(updateData)
+        .then(() => sendEmailDraft(sendData))
+        .then(() => {
+          setDrafts((current) =>
+            current.map((draft) =>
+              draft.id === currentDraft.id ? { ...draft, status: "sent" } : draft,
+            ),
+          );
+          router.refresh();
+          closeDialog();
+        })
+        .catch(() => setError("Die E-Mail konnte nicht versendet werden."));
+    });
+  }
+
   function removeDraft() {
     if (!currentDraft) return;
     const formData = new FormData();
@@ -237,6 +267,12 @@ export function DraftReviewDialog({
         event.preventDefault();
         closeDialog();
       }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closeDialog();
+        }
+      }}
     >
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -302,18 +338,30 @@ export function DraftReviewDialog({
 
       {error && <p className="mt-3" role="alert">{error}</p>}
 
-      <div className="mt-5 flex flex-wrap justify-between gap-2">
-        <div className="flex gap-2">
+      <div className="email-review-actions mt-5">
+        <div className="email-review-navigation">
           <button type="button" onClick={() => selectDraft(drafts[index - 1], index - 1)} disabled={index === 0 || isPending}>Zurück</button>
           <button type="button" onClick={() => selectDraft(drafts[index + 1], index + 1)} disabled={index === drafts.length - 1 || isPending}>Weiter</button>
         </div>
-        <div className="flex flex-wrap justify-end gap-2">
+        <div className="email-review-action-buttons">
           <button type="button" onClick={removeDraft} className="danger-button" disabled={isPending}>Löschen</button>
           <button type="button" onClick={toggleRegeneration} disabled={isPending}>Neu generieren</button>
           <button type="button" onClick={closeDialog} disabled={isPending}>Behalten</button>
           <button type="button" onClick={() => saveDraft("draft")} disabled={isPending}>Bearbeitung speichern</button>
           <button type="button" className="primary-button" onClick={() => saveDraft("approved")} disabled={isPending}>
             Für später freigeben
+          </button>
+          <button
+            type="button"
+            className="send-button"
+            onClick={sendCurrentDraft}
+            disabled={isPending || currentDraft.status === "sent"}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m3 11 18-8-8 18-2-8-8-2Z" />
+              <path d="m11 13 5-5" />
+            </svg>
+            {currentDraft.status === "sent" ? "Bereits gesendet" : "Jetzt senden"}
           </button>
         </div>
       </div>

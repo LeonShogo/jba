@@ -1,6 +1,11 @@
 "use client";
 
-import type { MouseEvent as ReactMouseEvent, ReactNode } from "react";
+import {
+  useState,
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode,
+  type SyntheticEvent,
+} from "react";
 import {
   deleteBand,
   deleteBandDocument,
@@ -15,6 +20,7 @@ export type BandRow = {
   name: string;
   genre: string | null;
   lineup: string | null;
+  social_media: SocialMediaLinks;
   website: string | null;
   epk_url: string | null;
   epk_contents: string[];
@@ -30,8 +36,8 @@ export type BandRow = {
   band_text_pdf_url: string | null;
 };
 
-const initialColumnWidths = [10, 7, 9, 8, 8, 7, 7, 9, 7, 7, 7, 7, 7];
-const minimumColumnWidths = [5, 4, 5, 5, 5, 4, 4, 5, 4, 4, 4, 4, 6];
+const initialColumnWidths = [10, 6, 8, 7, 6, 4, 5, 5, 8, 7, 8, 10, 8, 8];
+const minimumColumnWidths = [8, 5, 6, 6, 5, 3, 4, 4, 6, 7, 7, 7, 7, 6];
 
 const epkContentOptions = [
   ["photos", "Pressefotos"],
@@ -46,6 +52,13 @@ const epkContentOptions = [
 type BandTableProps = {
   bands: BandRow[];
   apiUrl: string;
+};
+
+type SocialMediaLinks = {
+  instagram?: string | null;
+  tiktok?: string | null;
+  facebook?: string | null;
+  other?: { label: string; url: string }[];
 };
 
 type FieldProps = {
@@ -85,6 +98,22 @@ function closeOnBackdropClick(event: ReactMouseEvent<HTMLDialogElement>) {
     event.clientY <= bounds.bottom;
 
   if (!clickedInside) dialog.close();
+}
+
+function handleDialogCancel(event: SyntheticEvent<HTMLDialogElement>) {
+  event.preventDefault();
+  event.currentTarget.close();
+}
+
+function saveDialogFormOnClose(event: SyntheticEvent<HTMLDialogElement>) {
+  const dialog = event.currentTarget;
+  if (dialog.dataset.autoSaved === "true") return;
+  const formId = dialog.dataset.formId;
+  const form = formId ? document.getElementById(formId) : null;
+  if (form instanceof HTMLFormElement) {
+    dialog.dataset.autoSaved = "true";
+    form.requestSubmit();
+  }
 }
 
 function PdfUploadControls({
@@ -138,7 +167,10 @@ function PdfDialogField(props: PdfProps) {
         title={statusLabel}
         onClick={() => {
           const dialog = document.getElementById(dialogId);
-          if (dialog instanceof HTMLDialogElement) dialog.showModal();
+          if (dialog instanceof HTMLDialogElement) {
+            dialog.dataset.autoSaved = "false";
+            dialog.showModal();
+          }
         }}
       >
         {props.value ? "✓" : "○"}
@@ -147,6 +179,7 @@ function PdfDialogField(props: PdfProps) {
         className="band-link-dialog"
         id={dialogId}
         onClick={closeOnBackdropClick}
+        onCancel={handleDialogCancel}
       >
         <h2 className="text-base font-semibold">{props.label}</h2>
         <PdfUploadControls {...props} />
@@ -196,7 +229,10 @@ function LinkDialogField({ formId, name, label, value, children }: FieldProps & 
         title={statusLabel}
         onClick={() => {
           const dialog = document.getElementById(dialogId);
-          if (dialog instanceof HTMLDialogElement) dialog.showModal();
+          if (dialog instanceof HTMLDialogElement) {
+            dialog.dataset.autoSaved = "false";
+            dialog.showModal();
+          }
         }}
       >
         {status === "saved" ? "✓" : status === "missing" ? "○" : "?"}
@@ -204,7 +240,10 @@ function LinkDialogField({ formId, name, label, value, children }: FieldProps & 
       <dialog
         className="band-link-dialog"
         id={dialogId}
+        data-form-id={formId}
         onClick={closeOnBackdropClick}
+        onCancel={handleDialogCancel}
+        onClose={saveDialogFormOnClose}
       >
         <h2 className="text-base font-semibold">{label}</h2>
         <input
@@ -268,7 +307,10 @@ function LongTextField({
         title={`${label}: Text ${value ? "vorhanden" : "fehlt"}, PDF ${pdfValue ? "vorhanden" : "fehlt"}`}
         onClick={() => {
           const dialog = document.getElementById(dialogId);
-          if (dialog instanceof HTMLDialogElement) dialog.showModal();
+          if (dialog instanceof HTMLDialogElement) {
+            dialog.dataset.autoSaved = "false";
+            dialog.showModal();
+          }
         }}
       >
         <span className={value ? "status-saved" : "status-missing"}>
@@ -281,7 +323,10 @@ function LongTextField({
       <dialog
         className="band-text-dialog"
         id={dialogId}
+        data-form-id={formId}
         onClick={closeOnBackdropClick}
+        onCancel={handleDialogCancel}
+        onClose={saveDialogFormOnClose}
       >
         <h2 className="text-lg font-semibold">{label}</h2>
         <textarea
@@ -316,6 +361,171 @@ function LongTextField({
   );
 }
 
+function TextDialogField({
+  formId,
+  name,
+  label,
+  value,
+  placeholder,
+}: FieldProps & { placeholder: string }) {
+  const dialogId = `${formId}-${name}`;
+
+  return (
+    <div className="resizable-table-cell" role="cell">
+      <button
+        className={`band-link-status band-link-status-${value ? "saved" : "missing"}`}
+        type="button"
+        title={`${label}: ${value ? "Text vorhanden" : "Text fehlt"}`}
+        onClick={() => {
+          const dialog = document.getElementById(dialogId);
+          if (dialog instanceof HTMLDialogElement) {
+            dialog.dataset.autoSaved = "false";
+            dialog.showModal();
+          }
+        }}
+      >{value ? "✓" : "○"}</button>
+      <dialog
+        className="band-text-dialog"
+        id={dialogId}
+        data-form-id={formId}
+        onClick={closeOnBackdropClick}
+        onCancel={handleDialogCancel}
+        onClose={saveDialogFormOnClose}
+      >
+        <h2 className="text-lg font-semibold">{label}</h2>
+        <textarea
+          form={formId}
+          name={name}
+          defaultValue={value ?? ""}
+          placeholder={placeholder}
+        />
+        <div className="mt-3 flex gap-2">
+          <button className="primary-button" type="submit" form={formId}>
+            Speichern
+          </button>
+          <button
+            type="button"
+            onClick={(event) => {
+              const dialog = event.currentTarget.closest("dialog");
+              if (dialog instanceof HTMLDialogElement) dialog.close();
+            }}
+          >
+            Schließen
+          </button>
+        </div>
+      </dialog>
+    </div>
+  );
+}
+
+function SocialMediaDialogField({
+  formId,
+  value,
+}: {
+  formId: string;
+  value: SocialMediaLinks;
+}) {
+  const dialogId = `${formId}-social_media`;
+  const [links, setLinks] = useState<SocialMediaLinks>(() => ({
+    instagram: value?.instagram ?? "",
+    tiktok: value?.tiktok ?? "",
+    facebook: value?.facebook ?? "",
+    other: value?.other ?? [],
+  }));
+  const linkCount = [links.instagram, links.tiktok, links.facebook].filter(Boolean).length + (links.other?.filter((item) => item.url).length ?? 0);
+
+  function updateLink(key: "instagram" | "tiktok" | "facebook", nextValue: string) {
+    setLinks((current) => ({ ...current, [key]: nextValue }));
+  }
+
+  return (
+    <div className="resizable-table-cell" role="cell">
+      <button
+        className={`band-link-status band-link-status-${linkCount ? "saved" : "missing"}`}
+        type="button"
+        title={`Social Media: ${linkCount ? `${linkCount} Links vorhanden` : "keine Links"}`}
+        onClick={() => {
+          const dialog = document.getElementById(dialogId);
+          if (dialog instanceof HTMLDialogElement) {
+            dialog.dataset.autoSaved = "false";
+            dialog.showModal();
+          }
+        }}
+      >{linkCount ? "✓" : "○"}</button>
+      <dialog
+        className="band-text-dialog social-media-dialog"
+        id={dialogId}
+        data-form-id={formId}
+        onClick={closeOnBackdropClick}
+        onCancel={handleDialogCancel}
+        onClose={saveDialogFormOnClose}
+      >
+        <h2 className="text-lg font-semibold">Social Media</h2>
+        <input type="hidden" form={formId} name="social_media" value={JSON.stringify(links)} />
+        <div className="social-media-fields">
+          {(["instagram", "tiktok", "facebook"] as const).map((key) => (
+            <label key={key}>
+              {key === "instagram" ? "Instagram" : key === "tiktok" ? "TikTok" : "Facebook"}
+              <input
+                type="url"
+                value={links[key] ?? ""}
+                onChange={(event) => updateLink(key, event.target.value)}
+                placeholder="https://…"
+              />
+            </label>
+          ))}
+          <div className="social-media-other-list">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-semibold">Weitere Links</span>
+              <button
+                type="button"
+                onClick={() => setLinks((current) => ({ ...current, other: [...(current.other ?? []), { label: "", url: "" }] }))}
+              >
+                + Hinzufügen
+              </button>
+            </div>
+            {links.other?.map((item, index) => (
+              <div className="social-media-other-row" key={`${index}-${item.label}`}>
+                <input
+                  value={item.label}
+                  onChange={(event) => setLinks((current) => ({
+                    ...current,
+                    other: current.other?.map((entry, itemIndex) => itemIndex === index ? { ...entry, label: event.target.value } : entry),
+                  }))}
+                  placeholder="Plattform"
+                />
+                <input
+                  type="url"
+                  value={item.url}
+                  onChange={(event) => setLinks((current) => ({
+                    ...current,
+                    other: current.other?.map((entry, itemIndex) => itemIndex === index ? { ...entry, url: event.target.value } : entry),
+                  }))}
+                  placeholder="https://…"
+                />
+                <button
+                  type="button"
+                  aria-label="Link entfernen"
+                  onClick={() => setLinks((current) => ({ ...current, other: current.other?.filter((_, itemIndex) => itemIndex !== index) }))}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="mt-3 flex gap-2">
+          <button className="primary-button" type="submit" form={formId}>Speichern</button>
+          <button type="button" onClick={(event) => {
+            const dialog = event.currentTarget.closest("dialog");
+            if (dialog instanceof HTMLDialogElement) dialog.close();
+          }}>Schließen</button>
+        </div>
+      </dialog>
+    </div>
+  );
+}
+
 export function BandTable({ bands, apiUrl }: BandTableProps) {
   const {
     gridTemplateColumns,
@@ -323,7 +533,7 @@ export function BandTable({ bands, apiUrl }: BandTableProps) {
     startColumnResize,
     startRowResize,
   } = useResizableTable({
-    storageKey: "jba:bands-table-layout",
+    storageKey: "jba:bands-table-layout-readable-4",
     initialColumnWidths,
     minimumColumnWidths,
     initialRowHeight: 34,
@@ -335,6 +545,7 @@ export function BandTable({ bands, apiUrl }: BandTableProps) {
     "Genre",
     "Besetzung",
     "Webseite",
+    "Social Media",
     "EPK",
     "Fotos",
     "Musik",
@@ -347,7 +558,7 @@ export function BandTable({ bands, apiUrl }: BandTableProps) {
   ];
 
   return (
-    <div className="resizable-table" role="table">
+    <div className="resizable-table bands-table" role="table">
       <div
         className="resizable-table-row resizable-table-header"
         role="row"
@@ -396,15 +607,13 @@ export function BandTable({ bands, apiUrl }: BandTableProps) {
                   required
                 />
               </div>
-              <div className="resizable-table-cell" role="cell">
-                <AutoGrowTextarea
-                  form={formId}
-                  name="genre"
-                  defaultValue={band.genre ?? ""}
-                  placeholder="–"
-                  aria-label={`Genre von ${band.name}`}
-                />
-              </div>
+              <TextDialogField
+                formId={formId}
+                name="genre"
+                label={`Genre von ${band.name}`}
+                value={band.genre}
+                placeholder="Genre und kurze Einordnung"
+              />
               <div className="resizable-table-cell" role="cell">
                 <AutoGrowTextarea
                   form={formId}
@@ -419,6 +628,10 @@ export function BandTable({ bands, apiUrl }: BandTableProps) {
                 name="website"
                 label={`Webseite von ${band.name}`}
                 value={band.website}
+              />
+              <SocialMediaDialogField
+                formId={formId}
+                value={band.social_media ?? {}}
               />
               <LinkDialogField
                 formId={formId}

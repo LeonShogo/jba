@@ -7,6 +7,7 @@ type Booking = {
   venue_id: number;
   status: string;
   notes: string | null;
+  first_sent_at: string | null;
 };
 
 type Band = {
@@ -21,6 +22,7 @@ type Venue = {
 
 type EmailDraftReference = {
   booking_id: number;
+  status: "draft" | "approved" | "sent";
 };
 
 export default async function BookingPage() {
@@ -49,6 +51,11 @@ export default async function BookingPage() {
   const bandNames = new Map(bands.map((band) => [band.id, band.name]));
   const venueNames = new Map(venues.map((venue) => [venue.id, venue.name]));
   const draftCounts = new Map<number, number>();
+  const sentBookingIds = new Set(
+    drafts
+      .filter((draft) => draft.status === "sent")
+      .map((draft) => draft.booking_id),
+  );
 
   for (const draft of drafts) {
     draftCounts.set(
@@ -61,8 +68,9 @@ export default async function BookingPage() {
     id: booking.id,
     bandName: bandNames.get(booking.band_id) ?? "Unbekannte Band",
     venueName: venueNames.get(booking.venue_id) ?? "Unbekanntes Venue",
-    status: booking.status,
+    status: sentBookingIds.has(booking.id) ? "sent" : booking.status,
     notes: booking.notes,
+    firstSentAt: booking.first_sent_at,
     draftCount: draftCounts.get(booking.id) ?? 0,
   }));
 

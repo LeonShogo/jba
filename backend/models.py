@@ -1,6 +1,8 @@
 
 
-from sqlalchemy import String, Text, ForeignKey, JSON
+from datetime import datetime
+
+from sqlalchemy import DateTime, String, Text, ForeignKey, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Base
 from enums import VenueType, BookingStatus, EmailDraftStatus
@@ -29,8 +31,11 @@ class BandModel(Base):
     website: Mapped[str | None] = mapped_column(String(500), nullable=True)
     contact_person: Mapped[str | None] = mapped_column(String(200), nullable=True)
     phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    genre: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    genre: Mapped[str | None] = mapped_column(Text, nullable=True)
     lineup: Mapped[str | None] = mapped_column(Text, nullable=True)
+    social_media: Mapped[dict] = mapped_column(
+        JSON, default=dict, server_default="{}", nullable=False
+    )
     equipment: Mapped[str | None] = mapped_column(Text, nullable=True)
     equipment_pdf_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     epk_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
@@ -54,6 +59,9 @@ class BookingModel(Base):
     venue_id: Mapped[int] = mapped_column(ForeignKey("venues.id"))
     status: Mapped[str] = mapped_column(String(50), default=BookingStatus.DRAFT.value)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    first_sent_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
 class EmailDraftModel(Base):
     __tablename__ = "email_drafts"

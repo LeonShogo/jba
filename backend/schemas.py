@@ -1,7 +1,22 @@
+from datetime import datetime
+
 from enums import VenueType, BookingStatus, EmailDraftStatus, EmailStyleAttribute
 from typing import Literal
 from pydantic import BaseModel, Field
 from enums import EpkContent
+
+
+class SocialMediaLink(BaseModel):
+    label: str
+    url: str
+
+
+class SocialMedia(BaseModel):
+    instagram: str | None = None
+    tiktok: str | None = None
+    facebook: str | None = None
+    other: list[SocialMediaLink] = Field(default_factory=list)
+
 
 class Band(BaseModel):
     id: int
@@ -12,6 +27,7 @@ class Band(BaseModel):
     phone: str | None = None
     genre: str | None = None
     lineup: str | None = None
+    social_media: SocialMedia = Field(default_factory=SocialMedia)
     equipment: str | None = None
     equipment_pdf_url: str | None = None
     epk_url: str | None = None
@@ -33,6 +49,7 @@ class BandCreate(BaseModel):
     phone: str | None = None
     genre: str | None = None
     lineup: str | None = None
+    social_media: SocialMedia = Field(default_factory=SocialMedia)
     equipment: str | None = None
     epk_url: str | None = None
     epk_contents: list[EpkContent] = Field(default_factory=list)
@@ -49,6 +66,7 @@ class BandUpdate(BaseModel):
     phone: str | None = None
     genre: str | None = None
     lineup: str | None = None
+    social_media: SocialMedia | None = None
     equipment: str | None = None
     epk_url: str | None = None
     epk_contents: list[EpkContent] = Field(default_factory=list)
@@ -97,6 +115,7 @@ class Booking(BaseModel):
     venue_id: int
     status: BookingStatus
     notes: str | None = None
+    first_sent_at: datetime | None = None
 
 class BookingCreate(BaseModel):
     band_id: int

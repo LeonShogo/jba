@@ -79,7 +79,7 @@ export function GenerateEmailDraftBatchForm({
   }
 
   return (
-    <section className="email-generator-panel mt-6 max-w-4xl border border-subtle surface-card p-4">
+    <section className="email-generator-panel mt-6 max-w-5xl border border-subtle surface-card p-4">
       <h2 className="text-lg font-semibold">KI-Mail-Entwürfe erstellen</h2>
       <p className="mt-1 text-sm text-muted">
         Eine Band auswählen, mehrere Venues markieren und für jedes Venue direkt ein Booking mit Mail-Entwurf anlegen.
@@ -99,7 +99,7 @@ export function GenerateEmailDraftBatchForm({
               </select>
             </label>
 
-            <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_7rem]">
+            <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_6rem]">
               <fieldset>
                 <legend className="text-sm font-semibold">Venues auswählen</legend>
                 <div className="venue-filters mt-2">
