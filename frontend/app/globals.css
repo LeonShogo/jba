@@ -1129,6 +1129,16 @@ select optgroup {
   margin-top: 1.5rem;
 }
 
+.email-reply-form summary {
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.email-reply-form summary::marker {
+  color: var(--accent);
+}
+
 .email-reply-form form {
   display: grid;
   gap: 0.8rem;
@@ -1145,6 +1155,39 @@ select optgroup {
   resize: vertical;
 }
 
+.email-reply-grid,
+.email-reply-ai {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+.email-reply-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.email-reply-ai {
+  grid-template-columns: minmax(0, 1fr) 9rem auto;
+  align-items: end;
+}
+
+.email-reply-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+
+.email-reply-actions button,
+.email-reply-ai button {
+  min-height: 2.35rem;
+}
+
+.form-error {
+  color: #efaaa5;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 800px) {
   .email-row {
     grid-template-columns: 1fr;
@@ -1152,6 +1195,11 @@ select optgroup {
 
   .email-row-status {
     justify-self: start;
+  }
+
+  .email-reply-grid,
+  .email-reply-ai {
+    grid-template-columns: 1fr;
   }
 }
 

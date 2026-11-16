@@ -43,26 +43,30 @@ export default async function EmailsPage() {
   const bandById = new Map(bands.map((band) => [band.id, band]));
   const venueById = new Map(venues.map((venue) => [venue.id, venue]));
 
-  const emails: EmailRow[] = drafts
-    .filter((draft) => draft.status === "sent")
-    .map((draft) => {
-      const booking = bookingById.get(draft.booking_id);
-      const venue = booking ? venueById.get(booking.venue_id) : undefined;
-      const band = booking ? bandById.get(booking.band_id) : undefined;
-      return {
-        id: draft.id,
-        bookingId: draft.booking_id,
-        subject: draft.subject,
-        recipientEmail: draft.recipient_email,
-        body: draft.body,
-        tourPeriod: draft.tour_period,
-        bandName: band?.name ?? "Unbekannte Band",
-        venueName: venue?.name ?? "Unbekanntes Venue",
-        country: venue?.country ?? "Unbekanntes Land",
-        bookingStatus: booking?.status ?? "sent",
-        firstSentAt: booking?.first_sent_at ?? null,
-      };
-    });
+  const latestByBooking = new Map<number, EmailRow>();
+  for (const draft of drafts.filter((item) => item.status === "sent")) {
+    const booking = bookingById.get(draft.booking_id);
+    const venue = booking ? venueById.get(booking.venue_id) : undefined;
+    const band = booking ? bandById.get(booking.band_id) : undefined;
+    const email: EmailRow = {
+      id: draft.id,
+      bookingId: draft.booking_id,
+      subject: draft.subject,
+      recipientEmail: draft.recipient_email,
+      body: draft.body,
+      tourPeriod: draft.tour_period,
+      bandName: band?.name ?? "Unbekannte Band",
+      venueName: venue?.name ?? "Unbekanntes Venue",
+      country: venue?.country ?? "Unbekanntes Land",
+      bookingStatus: booking?.status ?? "sent",
+      firstSentAt: booking?.first_sent_at ?? null,
+    };
+    const current = latestByBooking.get(draft.booking_id);
+    if (!current || draft.id > current.id) {
+      latestByBooking.set(draft.booking_id, email);
+    }
+  }
+  const emails = [...latestByBooking.values()];
 
   return (
     <main className="emails-page">

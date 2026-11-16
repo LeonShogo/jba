@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createManualEmailDraft } from "../../actions";
+import { EmailReplyPanel } from "../EmailReplyPanel";
 
 type EmailDraft = {
   id: number;
@@ -92,41 +92,27 @@ export default async function EmailDetailPage({
         ))}
       </section>
 
-      <section className="email-reply-form">
-        <h2 className="text-lg font-semibold">Auf diese Unterhaltung antworten</h2>
-        <p className="text-muted mt-1">
-          Die Antwort wird als neuer Entwurf gespeichert und erscheint weiterhin unter E-Mail-Entwürfe.
-        </p>
-        <form action={createManualEmailDraft}>
-          <input type="hidden" name="band_id" value={booking.band_id} />
-          <input type="hidden" name="venue_id" value={booking.venue_id} />
-          <input
-            type="hidden"
-            name="recipient_email"
-            value={selected.recipient_email}
-          />
-          <label>
-            Tourzeitraum
-            <input
-              name="tour_period"
-              required
-              defaultValue={selected.tour_period ?? ""}
-              placeholder="Zum Beispiel Juni bis August 2027"
-            />
-          </label>
-          <label>
-            Betreff
-            <input name="subject" required defaultValue={`Re: ${selected.subject}`} />
-          </label>
-          <label>
-            Nachricht
-            <textarea name="body" required rows={10} placeholder="Deine Antwort ..." />
-          </label>
-          <button className="primary-button" type="submit">
-            Antwort als Entwurf speichern
-          </button>
-        </form>
-      </section>
+      <EmailReplyPanel
+        bookingId={booking.id}
+        bandId={booking.band_id}
+        venueId={booking.venue_id}
+        recipientEmail={selected.recipient_email}
+        defaultTourPeriod={selected.tour_period ?? ""}
+        defaultSubject={`Re: ${selected.subject}`}
+        drafts={drafts
+          .filter(
+            (draft) =>
+              draft.booking_id === booking.id && draft.status !== "sent",
+          )
+          .map(({ id, tour_period, recipient_email, subject, body, status }) => ({
+            id,
+            tour_period,
+            recipient_email,
+            subject,
+            body,
+            status: status as "draft" | "approved",
+          }))}
+      />
     </main>
   );
 }

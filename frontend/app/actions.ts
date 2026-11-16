@@ -671,7 +671,7 @@ export async function deleteBand(formData: FormData) {
   revalidatePath("/bands");
 }
 
-export async function createManualEmailDraft(formData: FormData) {
+export async function createManualEmailDraftWithResult(formData: FormData) {
   const bandId = Number(formData.get("band_id"));
   const venueId = Number(formData.get("venue_id"));
   const tourPeriod = formData.get("tour_period");
@@ -741,13 +741,20 @@ export async function createManualEmailDraft(formData: FormData) {
     throw new Error("Manueller Entwurf konnte nicht gespeichert werden.");
   }
 
+  const createdDraft = (await response.json()) as { id: number };
   revalidatePath("/email-drafts");
   revalidatePath("/emails");
   revalidatePath("/bookings");
+  return { id: createdDraft.id };
+}
+
+export async function createManualEmailDraft(formData: FormData): Promise<void> {
+  await createManualEmailDraftWithResult(formData);
 }
 
 export async function updateEmailDraft(formData: FormData) {
   const id = Number(formData.get("id"));
+  const tourPeriod = formData.get("tour_period");
   const recipientEmail = formData.get("recipient_email");
   const subject = formData.get("subject");
   const body = formData.get("body");
@@ -755,6 +762,7 @@ export async function updateEmailDraft(formData: FormData) {
 
   if (
     id <= 0 ||
+    (tourPeriod !== null && typeof tourPeriod !== "string") ||
     typeof recipientEmail !== "string" ||
     typeof subject !== "string" ||
     typeof body !== "string" ||
@@ -770,6 +778,7 @@ export async function updateEmailDraft(formData: FormData) {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
+      ...(typeof tourPeriod === "string" ? { tour_period: tourPeriod } : {}),
       recipient_email: recipientEmail,
       subject,
       body,
@@ -782,6 +791,7 @@ export async function updateEmailDraft(formData: FormData) {
   }
 
   revalidatePath("/email-drafts");
+  revalidatePath("/emails");
 }
 
 export async function deleteEmailDraft(formData: FormData) {
@@ -820,6 +830,7 @@ export async function sendEmailDraft(formData: FormData) {
 
   revalidatePath("/email-drafts");
   revalidatePath("/bookings");
+  revalidatePath("/emails");
 }
 
 export async function deleteBookingDrafts(formData: FormData) {
